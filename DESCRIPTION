@@ -1,0 +1,22 @@
+Package: STAN
+Version: 0.99.3
+Date: 2014-07-18
+Title: STrand-specific ANnotation of genomic data
+Author: Benedikt Zacher, Julien Gagneur, Achim Tresch
+Maintainer: Benedikt Zacher <zacher@lmb.uni-muenchen.de>
+Depends: Rsolnp, methods
+VignetteBuilder: knitr
+Suggests: BiocStyle, Gviz, GenomicRanges, IRanges, gplots, knitr
+Description: STAN (STrand-specic ANnotation of genomic data) implements
+        bidirectional Hidden Markov Models (bdHMM), which are designed
+        for studying directed genomic processes, such as gene
+        transcription, DNA replication, recombination or DNA repair by
+        integrating genomic data. bdHMMs model a sequence of successive
+        observations (e.g. ChIP or RNA measurements along the genome)
+        by a discrete number of 'directed genomic states', which e.g.
+        reflect distinct genome-associated complexes. Unlike standard
+        HMM approaches, bdHMMs allow the integration of strand-specific
+        (e.g. RNA) and non strand-specific data (e.g. ChIP).
+License: GPL (>= 2)
+biocViews: HiddenMarkovModel, GenomeAnnotation, Microarray, Sequencing
+LazyLoad: yes
