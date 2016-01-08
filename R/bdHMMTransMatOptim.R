@@ -38,8 +38,7 @@ eval_constr <- function(transMat, xsi_sum, constraints, statDistr) {
 #' @return optimized transitions
 #' @usage c2optimize(pars)
 #' 
-#' @keywords internal
-#' @noRd
+#' @export c2optimize
 c2optimize = function(pars) {
     out = NULL
     
@@ -61,7 +60,8 @@ c2optimize = function(pars) {
 #' 
 #' @keywords internal
 #' @noRd
-bidirGetTransMat_fixed2 = function(params, xsi_sum, constraints, nStates, statD) {
+bidirGetTransMat_fixed2 = function(params, xsi_sum, constraints, nStates, 
+    statD) {
     
     newMat = matrix(0, nrow = nStates, ncol = nStates)
     for (i in 1:length(constraints)) {
@@ -86,36 +86,18 @@ bidirGetTransMat_fixed2 = function(params, xsi_sum, constraints, nStates, statD)
 #' 
 #' @keywords internal
 #' @noRd
-bidirEqB2 = function(params, xsi_sum, constraints, nStates, stateLabel, initGamma) {
+bidirEqB2 = function(params, xsi_sum, constraints, nStates, stateLabel, 
+    initGamma) {
     stateLabel = stateLabel[-grep("R", stateLabel)]
-    myF = grep("F", stateLabel)
+    Forward = grep("F", stateLabel)
     U = grep("U", stateLabel)
-    statD = c(params[length(constraints) + myF], params[length(constraints) + myF], 
-        params[length(constraints) + U])
+    statD = c(params[length(constraints) + Forward], params[length(constraints) + 
+        Forward], params[length(constraints) + U])
     
-    newMat = bidirGetTransMat_fixed2(params, xsi_sum, constraints, nStates, statD)
+    newMat = bidirGetTransMat_fixed2(params, xsi_sum, constraints, nStates, 
+        statD)
     # newMat[which(newMat < 1e-100)] = 1e-100
     return(1 - c(apply(newMat, 1, sum), sum(statD)))
-}
-
-
-#'  
-#' The function calls R densitiy function of inverse Wishart (Prior of Multivariate Gaussian) from C++.
-#' 
-#' @title Fit a Hidden Markov Model
-#' 
-#' @param hyperparams Hyperparameters for Iverse Wishart as list(cov=Covariance-matrix, S=Scale-Matrix, v=Degrees_of_freedom).
-#' 
-#' @return Log density of the Inverse-Wishart distribution.
-#' @usage calldiwish(hyperparams)
-#' 
-#' @keywords internal
-#' @noRd
-calldiwish = function(hyperparams) {
-    hyperparams$cov = matrix(hyperparams$cov, nrow = dim(hyperparams$S)[1], ncol = dim(hyperparams$S)[2])
-    val = logdiwish(hyperparams$cov, hyperparams$v, hyperparams$S)
-    out = val
-    return(out)
 }
 
 
@@ -129,14 +111,16 @@ calldiwish = function(hyperparams) {
 #' 
 #' @keywords internal
 #' @noRd
-bidirObjective2 = function(params, xsi_sum, constraints, nStates, stateLabel, initGamma) {
+bidirObjective2 = function(params, xsi_sum, constraints, nStates, stateLabel, 
+    initGamma) {
     stateLabel = stateLabel[-grep("R", stateLabel)]
-    myF = grep("F", stateLabel)
+	Forward = grep("F", stateLabel)
     U = grep("U", stateLabel)
-    statD = c(params[length(constraints) + myF], params[length(constraints) + myF], 
-        params[length(constraints) + U])
+    statD = c(params[length(constraints) + Forward], params[length(constraints) + 
+        Forward], params[length(constraints) + U])
     out = 0
-    newMat = bidirGetTransMat_fixed2(params, xsi_sum, constraints, nStates, statD)
+    newMat = bidirGetTransMat_fixed2(params, xsi_sum, constraints, nStates, 
+        statD)
     newMat[which(newMat < 1e-300)] = 1e-300
     for (l in 1:length(constraints)) {
         i = constraints[[l]][[1]][1]
@@ -172,7 +156,8 @@ bidirObjective2 = function(params, xsi_sum, constraints, nStates, stateLabel, in
 c2solnp2 = function(pars) {
     
     nStates = pars$nStates
-    out = list(transMat = pars$transMat, x0 = pars$x0, statD = pars$statD, doit = as.integer(0))
+    out = list(transMat = pars$transMat, x0 = pars$x0, statD = pars$statD, 
+        doit = as.integer(0))
     oldval = bidirObjective2(pars$x0, pars$xsi_sum, pars$constraints, pars$nStates, 
         pars$stateLabel, pars$initGamma)
     # pars$xsi_sum = pars$xsi_sum + pars$pcount
@@ -188,9 +173,9 @@ c2solnp2 = function(pars) {
     statD = statD/sum(statD)
     
     stateLabel = pars$stateLabel
-    myF = grep("F", stateLabel)
+    Forward = grep("F", stateLabel)
     U = grep("U", stateLabel)
-    statD = statD[c(myF, U)]
+    statD = statD[c(Forward, U)]
     newx0 = c(rep(1/nStates, length(pars$constraints)), statD)
     xsi_sum = pars$xsi_sum
     
@@ -199,7 +184,8 @@ c2solnp2 = function(pars) {
     xsi_sum_p = pars$xsi_sum
     gamma_p = apply(xsi_sum_p, 1, sum)
     gamma_m = apply(xsi_sum_p, 2, sum)[couples]
-    # print(couple) print(gamma_p+gamma_m - (gamma_m[couples]+gamma_p[couples]))
+    # print(couple) print(gamma_p+gamma_m -
+    # (gamma_m[couples]+gamma_p[couples]))
     
     xsi_sum_m = matrix(0, nrow = nStates, ncol = nStates)
     for (i in 1:length(constraints)) {
@@ -213,10 +199,12 @@ c2solnp2 = function(pars) {
     newx0 = c()
     for (i in 1:length(constraints)) {
         newMat[constraints[[i]][[1]][1], constraints[[i]][[1]][2]] = (xsi_sum_p[constraints[[i]][[1]][1], 
-            constraints[[i]][[1]][2]] + xsi_sum_m[constraints[[i]][[1]][1], constraints[[i]][[1]][2]])/(gamma_p[constraints[[i]][[1]][1]] + 
+            constraints[[i]][[1]][2]] + xsi_sum_m[constraints[[i]][[1]][1], 
+            constraints[[i]][[1]][2]])/(gamma_p[constraints[[i]][[1]][1]] + 
             gamma_m[constraints[[i]][[1]][1]])
         newMat[constraints[[i]][[2]][1], constraints[[i]][[2]][2]] = (xsi_sum_p[constraints[[i]][[2]][1], 
-            constraints[[i]][[2]][2]] + xsi_sum_m[constraints[[i]][[2]][1], constraints[[i]][[2]][2]])/(gamma_p[constraints[[i]][[2]][1]] + 
+            constraints[[i]][[2]][2]] + xsi_sum_m[constraints[[i]][[2]][1], 
+            constraints[[i]][[2]][2]])/(gamma_p[constraints[[i]][[2]][1]] + 
             gamma_m[constraints[[i]][[2]][1]])
         newx0[i] = newMat[constraints[[i]][[1]][1], constraints[[i]][[1]][2]]
         
@@ -233,27 +221,29 @@ c2solnp2 = function(pars) {
     statD = y[1, ]
     # statD = (statD[couple]+statD)/2
     statD = statD/sum(statD)
-    # print(max(abs(eval_constr( newMat, xsi_sum, constraints, statD )))) print(statD
-    # %*% newMat - statD)
-    statD = statD[c(myF, U)]
+    # print(max(abs(eval_constr( newMat, xsi_sum, constraints, statD ))))
+    # print(statD %*% newMat - statD)
+    statD = statD[c(Forward, U)]
     newx0 = c(pars$x0, statD)
     ### 
     est = t(apply(pars$xsi_sum, 1, function(x) x/sum(x)))
     # #newx0 = c(estimate, statD) #newx0 = pars$x0 for(i in
-    # 1:length(pars$constraints)) { newx0[i] = est[pars$constraints[[i]][[1]][1],
-    # pars$constraints[[i]][[1]][2]] } print(newx0)
+    # 1:length(pars$constraints)) { newx0[i] =
+    # est[pars$constraints[[i]][[1]][1], pars$constraints[[i]][[1]][2]] }
+    # print(newx0)
     rem = c()
     # n = sum(pars$xsi_sum[pars$constraints[[c]][[1]][1],
-    # pars$constraints[[c]][[1]][2]]) transProbEM = t(apply(pars$xsi_sum, 1,
-    # function(x) x/sum(x)))
+    # pars$constraints[[c]][[1]][2]]) transProbEM = t(apply(pars$xsi_sum,
+    # 1, function(x) x/sum(x)))
     nobs = sum(xsi_sum)
     nobs = 1
     for (c in 1:length(pars$constraints)) {
         if (pars$xsi_sum[pars$constraints[[c]][[1]][1], pars$constraints[[c]][[1]][2]] < 
-            nobs * 1e-06 & pars$xsi_sum[pars$constraints[[c]][[2]][1], pars$constraints[[c]][[2]][2]] < 
-            nobs * 1e-06) {
-            # if(est[pars$constraints[[c]][[1]][1], pars$constraints[[c]][[1]][2]] < 1e-6 &
-            # est[pars$constraints[[c]][[2]][1], pars$constraints[[c]][[2]][2]] < 1e-6) {
+            nobs * 1e-06 & pars$xsi_sum[pars$constraints[[c]][[2]][1], 
+            pars$constraints[[c]][[2]][2]] < nobs * 1e-06) {
+            # if(est[pars$constraints[[c]][[1]][1], pars$constraints[[c]][[1]][2]]
+            # < 1e-6 & est[pars$constraints[[c]][[2]][1],
+            # pars$constraints[[c]][[2]][2]] < 1e-6) {
             rem = c(rem, c)
         }
     }
@@ -261,27 +251,30 @@ c2solnp2 = function(pars) {
     if (length(rem) > 0) {
         # print(rem)
         removed = pars$constraints[rem]
-        pars$constraints = pars$constraints[setdiff(1:length(pars$constraints), rem)]
+        pars$constraints = pars$constraints[setdiff(1:length(pars$constraints), 
+            rem)]
         pars$x0 = pars$x0[setdiff(1:length(pars$x0), rem)]
         newx0 = c(pars$x0[1:length(pars$constraints)], statD)
     }
     constraints = pars$constraints
-    # oldval = bidirObjective2(pars$x0, pars$xsi_sum, pars$constraints, pars$nStates,
-    # pars$stateLabel, pars$initGamma)
+    # oldval = bidirObjective2(pars$x0, pars$xsi_sum, pars$constraints,
+    # pars$nStates, pars$stateLabel, pars$initGamma)
     
     UB = c(pars$UB[1:length(pars$constraints)], 1.25 * statD)  #
     LB = c(pars$LB[1:length(pars$constraints)], 0.75 * statD)  # rep(0, length(UB))#
     # print(newx0)
     res = solnp(newx0, fun = bidirObjective2, eqfun = bidirEqB2, eqB = pars$eqB, 
         xsi_sum = pars$xsi_sum, initGamma = pars$initGamma, stateLabel = pars$stateLabel, 
-        constraints = constraints, nStates = pars$nStates, LB = LB, UB = UB, control = pars$control)
+        constraints = constraints, nStates = pars$nStates, LB = LB, UB = UB, 
+        control = pars$control)
     
     
     
     out[["nrm"]] = as.integer(length(rem))
     # cat('objective diff:', res$values[length(res$values)], '-',
     # pars$objective[length(pars$objective)], '=',
-    # res$values[length(res$values)]-pars$objective[length(pars$objective)], '\n')
+    # res$values[length(res$values)]-pars$objective[length(pars$objective)],
+    # '\n')
     if (FALSE) {
         cat("Removing ", length(rem), " constraints.\n", sep = "")
         
@@ -303,13 +296,14 @@ c2solnp2 = function(pars) {
     }
     # print(rel_increase)
     
-    # if(rel_increase < 0 & res$convergence == 0 & pars$nrm[length(pars$nrm)] ==
-    # length(rem)) { ## BAD CONVERGENCE out[['objective']] =
-    # as.numeric(pars$objective[length(pars$objective)]) if(FALSE) { cat('Objective
-    # function (optimization) already converged to optimal solution in previous
-    # iteration. (=> using old estimate) \n') #cat('objective diff:',
-    # res$values[length(res$values)], '-', pars$objective[length(pars$objective)],
-    # '=', d, '\n') } }
+    # if(rel_increase < 0 & res$convergence == 0 &
+    # pars$nrm[length(pars$nrm)] == length(rem)) { ## BAD CONVERGENCE
+    # out[['objective']] =
+    # as.numeric(pars$objective[length(pars$objective)]) if(FALSE) {
+    # cat('Objective function (optimization) already converged to optimal
+    # solution in previous iteration. (=> using old estimate) \n')
+    # #cat('objective diff:', res$values[length(res$values)], '-',
+    # pars$objective[length(pars$objective)], '=', d, '\n') } }
     
     
     # print(oldval-res$values[length(res$values)]) GOOD CONVERGENCE
@@ -319,10 +313,10 @@ c2solnp2 = function(pars) {
         # cat('(+) ')
         stateLabel = pars$stateLabel
         stateLabel = stateLabel[-grep("R", stateLabel)]
-        myF = grep("F", stateLabel)
+        Forward = grep("F", stateLabel)
         U = grep("U", stateLabel)
-        statD = c(params[length(constraints) + myF], params[length(constraints) + 
-            myF], params[length(constraints) + U])
+        statD = c(params[length(constraints) + Forward], params[length(constraints) + 
+            Forward], params[length(constraints) + U])
         newMat = bidirGetTransMat_fixed2(params, pars$xsi_sum, pars$constraints, 
             pars$nStates, statD)
         d = res$values[length(res$values)] - pars$objective[length(pars$objective)]
@@ -335,14 +329,14 @@ c2solnp2 = function(pars) {
         if (FALSE) {
             cat("Rsolnp converged after ", length(res$values), " iterations.\n", 
                 sep = "")
-            cat("objective diff: ", res$values[length(res$values)], "-", pars$objective[length(pars$objective)], 
-                "=", d, "\n")
-            cat("Max. violation of row sum constraints: ", max(abs(1 - apply(newMat, 
-                1, sum))), "\n", sep = "")
-            cat("Violation of sum(stat. distribution): ", abs(1 - sum(statD)), "\n", 
-                sep = "")
-            cat("Max. violation of steady-state property: ", max(abs(statD %*% newMat - 
-                statD)), "\n", sep = "")
+            cat("objective diff: ", res$values[length(res$values)], "-", 
+                pars$objective[length(pars$objective)], "=", d, "\n")
+            cat("Max. violation of row sum constraints: ", max(abs(1 - 
+                apply(newMat, 1, sum))), "\n", sep = "")
+            cat("Violation of sum(stat. distribution): ", abs(1 - sum(statD)), 
+                "\n", sep = "")
+            cat("Max. violation of steady-state property: ", max(abs(statD %*% 
+                newMat - statD)), "\n", sep = "")
             cat("Max. violation of symmetry constraints: ", max(abs(eval_constr(newMat, 
                 xsi_sum, constraints, statD))), "\n", sep = "")
             cat("Stationary distribution: ", paste(round(statD, 3), collapse = " "), 
@@ -352,8 +346,8 @@ c2solnp2 = function(pars) {
         
         
         # cat('Stationary distribution - fixed_statD (computed from gamma): ',
-        # paste(round(statD, 5)-round(fixed_statD, 5), collapse=' '), '\n') NO/BAD
-        # CONVERGENCE
+        # paste(round(statD, 5)-round(fixed_statD, 5), collapse=' '), '\n')
+        # NO/BAD CONVERGENCE
     } else {
         if (FALSE) {
             cat("Rsolnp did not converge => Using transition matrix from previous step.\n")
@@ -362,4 +356,5 @@ c2solnp2 = function(pars) {
     }
     # print(out$doit)
     out
-} 
+}
+ 

@@ -10,18 +10,18 @@ using namespace std;
 
 class EmissionFactory
 {
-public:
+    public:
 // create single Emission function
-    virtual EmissionFunction* createEmissionFunction(ParamContainerEmissions *emissionParams, int parallel) = 0;
+        virtual EmissionFunction* createEmissionFunction(ParamContainerEmissions *emissionParams, int parallel) = 0;
 // create set of Emission functions
-    virtual EmissionFunction* createEmissionFunctionMixed(list<EmissionFunction*> efb, ParamContainerEmissions *emissionParams) {};
-    ~EmissionFactory()
-    {
-        if(DEBUG_MEMORY)
+        virtual EmissionFunction* createEmissionFunctionMixed(list<EmissionFunction*> efb, ParamContainerEmissions *emissionParams){};
+        ~EmissionFactory()
         {
-            printf("delete->EmissionFactory;\n");
+            if(DEBUG_MEMORY)
+            {
+                printf("delete->EmissionFactory;\n");
+            }
         }
-    }
 };
 
 EmissionFactory* createEmissionFactory(int whichone);

@@ -1,6 +1,10 @@
 #include "EmissionFactory.h"
 #include "MultivariateGaussianFactory.h"
 #include "BernoulliFactory.h"
+#include "PoissonFactory.h"
+#include "MultinomialFactory.h"
+#include "NegativeBinomialFactory.h"
+#include "PoissonLogNormalFactory.h"
 #include "JointlyIndependentFactory.h"
 #include "ParamContainerEmissions.h"
 #include <list>
@@ -12,16 +16,38 @@ EmissionFactory* createEmissionFactory(int whichone)
     {
         printf("new->EmissionFactory;\n");
     }
+
     if (MULTIVARIATEGAUSSIAN == whichone)
     {
         return new MultivariateGaussianFactory();
     }
-    if (BERNOULLI == whichone)
+    else if (BERNOULLI == whichone)
     {
         return new BernoulliFactory();
     }
-    else
+    else if(POISSON == whichone)
+    {
+        return new PoissonFactory();
+    }
+    else if(MULTINOMIAL == whichone)
+    {
+        return new MultinomialFactory();
+    }
+    else if(JOINTLYINDEPENDENT == whichone)
     {
         return new JointlyIndependentFactory();
     }
+    else if(NEGATIVEBINOMIAL == whichone)
+    {
+        return new NegativeBinomialFactory();
+    }
+    else if(POISSONLOGNORMAL == whichone)
+    {
+        return new PoissonLogNormalFactory();
+    }
+    else
+    {
+        error("Cannot create unknown emission factory!");
+    }
+
 }

@@ -23,4 +23,6 @@ int deallocateMemRescFac(double* c, int maxLen, int K);
 int deallocateMemGamma(double** gamma, int maxLen, int K);
 int deallocateMemXsi(double*** xsi, int maxLen, int K);
 int deallocateMemEmissionProb(double** emissionProb, int maxLen, int K);
+
+//ParamContainerEmissions** allocateParamContainerVector(int d);
 #endif

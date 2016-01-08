@@ -52,11 +52,12 @@ void HMM::reverseObs(double *orig, double** rev, int* revop, int D)
 }
 
 
-void HMM::calcEmissionProbs(double*** obs, double** emissionProb, int* T, int n, int** flags, int* state2flag, int* revop, int** isNaN, int ncores, int verbose)
+void HMM::calcEmissionProbs(double*** obs, double** emissionProb, int* T, int n, int** flags, int* state2flag, int* revop, int** isNaN, int ncores, int verbose, int* couples)
 {
     double proba;
     int D = this->emissions[0]->getParameter()->getD();
-    double* rev_obs = (double*)malloc(sizeof(double)*D);
+// 	#pragma omp parallel private(i,t,proba)
+// 	{
 
     if(verbose)
     {
@@ -65,12 +66,12 @@ void HMM::calcEmissionProbs(double*** obs, double** emissionProb, int* T, int n,
 
     if(DEBUG)
     {
-        // flags, strand-specific observations
+                                                  // flags, strand-specific observations
         if(state2flag != NULL && flags != NULL && revop != NULL)
         {
             Rprintf("density calculation: +flags +reverse observations\n");
         }
-        // strand-specific observation, no flags
+                                                  // strand-specific observation, no flags
         else if(state2flag != NULL && flags == NULL && revop != NULL)
         {
             Rprintf("density calculation: -flags +reverse observations\n");
@@ -79,8 +80,7 @@ void HMM::calcEmissionProbs(double*** obs, double** emissionProb, int* T, int n,
         {
             Rprintf("density calculation: +flags -reverse observations\n");
         }
-        // no flags, no strand-specific observations
-        else                                     
+        else                                      // no flags, no strand-specific observations
         {
             Rprintf("density calculation: -flags -reverse observations\n");
         }
@@ -90,84 +90,96 @@ void HMM::calcEmissionProbs(double*** obs, double** emissionProb, int* T, int n,
     int* myBounds = (int*)malloc(sizeof(int)*(ncores+1));
 
     myBounds[0] = 0;
+//Rprintf("myBounds[%d]=%d\n", 0, myBounds[0]);
     int iter;
     for(iter=1; iter<ncores; iter++)
     {
         myBounds[iter] = myBounds[iter-1]+seglen;
+//Rprintf("myBounds[%d]=%d\n", iter, myBounds[iter]);
     }
     myBounds[ncores] = T[n];
+//	Rprintf("myBounds[%d]=%d\n", ncores, myBounds[ncores]);
 
     int curr_core;
+//Rprintf("ncores=%d\n", ncores);
     double **myTransMat = this->A->getTransMat();
 
-    #pragma omp parallel for num_threads(ncores)
+#pragma omp parallel for
     for(curr_core=0; curr_core<ncores; curr_core++)
     {
+        double* rev_obs = (double*)malloc(sizeof(double)*D);
+
         int i,j,t,k;
         double denom;
         for(t=myBounds[curr_core]; t<myBounds[curr_core+1]; t++)
         {
             for(i=0; i<this->K; i++)
             {
-                // flags, strand-specific observations
+                                                  // flags, strand-specific observations
                 if(state2flag != NULL && flags != NULL && revop != NULL)
                 {
                     if(state2flag[i] == 1 && (flags[n][t] != 1))
                     {
                         reverseObs(obs[n][t], &rev_obs, revop, D);
-                        emissionProb[i][t] = this->emissions[i]->calcEmissionProbability(rev_obs, isNaN[n][t]);
+                        emissionProb[i][t] = this->emissions[i]->calcEmissionProbability(rev_obs, isNaN[n][t], n);
+//		if(emissionProb[i][t] < 0) { // this may be the case for NB/PoiLog for pre-computed emission probs
+//			emissionProb[i][t] = this->emissions[couples[i]]->calcEmissionProbability(rev_obs, isNaN[n][t], n);
+//		}
                     }
                     else if(state2flag[i] == -1 && (flags[n][t] != -1))
                     {
-                        emissionProb[i][t] = this->emissions[i]->calcEmissionProbability(obs[n][t], isNaN[n][t]);
+                        emissionProb[i][t] = this->emissions[i]->calcEmissionProbability(obs[n][t], isNaN[n][t], n);
                     }
                     else if(state2flag[i] == -100)
                     {
-                        emissionProb[i][t] = this->emissions[i]->calcEmissionProbability(obs[n][t], isNaN[n][t]);
+                        emissionProb[i][t] = this->emissions[i]->calcEmissionProbability(obs[n][t], isNaN[n][t], n);
                     }
                     else
                     {
                         emissionProb[i][t] = 0;
                     }
                 }
-                // strand-specific observation, no flags
+                                                  // strand-specific observation, no flags
                 else if(state2flag != NULL && flags == NULL && revop != NULL)
                 {
                     if(state2flag[i] == 1)
                     {
                         reverseObs(obs[n][t], &rev_obs, revop, D);
-                        emissionProb[i][t] = this->emissions[i]->calcEmissionProbability(rev_obs, isNaN[n][t]);
+                        emissionProb[i][t] = this->emissions[i]->calcEmissionProbability(rev_obs, isNaN[n][t], n);
+//	if(emissionProb[i][t] < 0) { // this may be the case for NB/PoiLog for pre-computed emission probs
+//		emissionProb[i][t] = this->emissions[couples[i]]->calcEmissionProbability(rev_obs, isNaN[n][t], n);
+//	}
                     }
                     else
                     {
-                        emissionProb[i][t] = this->emissions[i]->calcEmissionProbability(obs[n][t], isNaN[n][t]);
+                        emissionProb[i][t] = this->emissions[i]->calcEmissionProbability(obs[n][t], isNaN[n][t], n);
                     }
 
                 }
-                // flags, no strand-specific observations
+                                                  // flags, no strand-specific observations
                 else if(state2flag != NULL && flags != NULL && revop == NULL)
                 {
                     if(state2flag[i] != flags[n][t])
                     {
-                        emissionProb[i][t] = this->emissions[i]->calcEmissionProbability(obs[n][t], isNaN[n][t]);
+                        emissionProb[i][t] = this->emissions[i]->calcEmissionProbability(obs[n][t], isNaN[n][t], n);
                     }
                     else
                     {
                         emissionProb[i][t] = 0;
                     }
                 }
-                // no flags, no strand-specific observations
-                else                              
+                else                              // no flags, no strand-specific observations
                 {
-                    emissionProb[i][t] = this->emissions[i]->calcEmissionProbability(obs[n][t], isNaN[n][t]);
+                    emissionProb[i][t] = this->emissions[i]->calcEmissionProbability(obs[n][t], isNaN[n][t], n);
                 }
 
             }
 
         }
+        free(rev_obs);
     }
+    free(myBounds);
 
-    free(rev_obs);
 }
 
 
@@ -213,12 +225,15 @@ void HMM::getAlphaBeta(double*** obs, double** alpha, double** beta, double* c, 
             if(myTransMat[i][j] > effective_zero)
             {
                 transitions[i][currnonzeros++] = j;
+//		Rprintf("%d ", transitions[i][currnonzeros-1]);
+
             }
             if(myTransMat[j][i] > effective_zero)
             {
                 transitions_rev[i][currnonzeros_rev++] = j;
             }
         }
+//Rprintf("\n");
     }
 
     if(verbose)
@@ -226,8 +241,20 @@ void HMM::getAlphaBeta(double*** obs, double** alpha, double** beta, double* c, 
         Rprintf("Sequence %d => calculating forward and backward terms (%d transitions are effectively 0).                                      \r", n+1, nzero_all);
     }
 
+//Rprintf("%d transitions are effectively 0!\n", nzero_all);
+/*double effective_zero = 0;
+int** is_zero =  (int**)malloc(sizeof(int*)*K);
+for(i=0; i<K; i++) {
+    is_zero[i] =  (int*)malloc(sizeof(int)*K);
+    for(j=0; j<K; j++) {
+        if(this->A->getTransMat()[i][j] < effective_zero) {
+            this->A->getTransMat()[i][j] = 0;
+            is_zero[i][j] = 1;
+        }
+    }
+}*/
 
-    // Compute alpha_1(i) and rescale with c_1
+// Compute alpha_1(i) and rescale with c_1
     c[0] = 0;
     for(i=0; i<this->K; i++)
     {
@@ -244,10 +271,10 @@ void HMM::getAlphaBeta(double*** obs, double** alpha, double** beta, double* c, 
         }
     }
 
-    // Compute all other alpha_t(i)
+// Compute all other alpha_t(i)
     for(t=1; t<T[n]; t++)
     {
-        R_CheckUserInterrupt();
+//R_CheckUserInterrupt();
         c[t] = 0;
         for(i=0; i<K; i++)
         {
@@ -265,7 +292,8 @@ void HMM::getAlphaBeta(double*** obs, double** alpha, double** beta, double* c, 
             c[t] = c[t] + alpha[t][i];
 
         }
-        // Rescale alpha[t][i]
+// Rescale alpha[t][i]
+//	Rprintf("%f\n", c[t]);
         c[t] = 1/c[t];
 
         for(i=0; i<K; i++)
@@ -274,16 +302,17 @@ void HMM::getAlphaBeta(double*** obs, double** alpha, double** beta, double* c, 
         }
     }
 
-    // beta_T = 1 is rescaled
+// beta_T = 1 is rescaled
     for(i=0; i<K; i++)
     {
         beta[T[n]-1][i] = 1;
+//beta[T[n]-1][i] = beta[T[n]-1][i]*c[T[n]-1];
     }
 
-    // Compute all other beta_t(i)
+// Compute all other beta_t(i)
     for(t=T[n]-2; t>=0; t--)
     {
-        R_CheckUserInterrupt();
+//R_CheckUserInterrupt();
         for(i=0; i<K; i++)
         {
             beta[t][i] = 0;
@@ -296,9 +325,19 @@ void HMM::getAlphaBeta(double*** obs, double** alpha, double** beta, double* c, 
                 beta[t][i] = 1e-300;
             }
             beta[t][i] = c[t]*beta[t][i];
+//Rprintf("beta[%d][%d]=%f\n", t, i, beta[t][i]);
         }
     }
 
+    free(nnonzeros);
+    free(nnonzeros_rev);
+    for(i=0; i<K; i++)
+    {
+        free(transitions[i]);
+        free(transitions_rev[i]);
+    }
+    free(transitions);
+    free(transitions_rev);
 
 }
 
@@ -306,7 +345,7 @@ void HMM::getAlphaBeta(double*** obs, double** alpha, double** beta, double* c, 
 void HMM::getGamma(double** alpha, double** beta, double* c,  double** emissionProb, double** gamma, int* T, int n, int ncores, double effective_zero, int verbose)
 {
     int iter;
-
+//effective_zero = -1;
     int p,q;
     int nzero_all = 0;
     int* nnonzeros = (int*)malloc(sizeof(int)*K);
@@ -355,7 +394,7 @@ void HMM::getGamma(double** alpha, double** beta, double* c,  double** emissionP
     int curr_core;
     double **myTransMat = this->A->getTransMat();
 
-    #pragma omp parallel for num_threads(ncores)
+#pragma omp parallel for
     for(curr_core=0; curr_core<ncores; curr_core++)
     {
         int i,j,t,k;
@@ -363,7 +402,7 @@ void HMM::getGamma(double** alpha, double** beta, double* c,  double** emissionP
         for(t=myBounds[curr_core]; t<myBounds[curr_core+1]; t++)
         {
 
-            // gamma
+// gamma
             denom = 0.0;
             for(i=0 ; i<this->K; i++)
             {
@@ -377,13 +416,103 @@ void HMM::getGamma(double** alpha, double** beta, double* c,  double** emissionP
         }
     }
 
+    free(myBounds);
+    free(nnonzeros);
+    for(p=0; p<K; p++)
+    {
+        free(transitions[p]);
+    }
+    free(transitions);
+
+}
+
+
+void HMM::getDirScore(double* dirScore, int** flags, int* state2flag, int* couples, int* revop, int** isNaN, double*** observations, double*** fixedEmission, int nStates, int nsample, int* T, int ncores, double effective_zero)
+{
+    int t,i,j,n,k;
+
+    int maxLen = 0;
+    for(n=0; n<nsample; n++)
+    {
+        if(maxLen < T[n])
+        {
+            maxLen = T[n];
+        }
+    }
+
+// allocate memory for auxiliary variables
+    double*** xsi = NULL;
+    double** alpha = NULL;
+    double** beta = NULL;
+    double** gamma = NULL;
+    double* Pk = NULL;
+    double** emissionProb = NULL;
+    double* c = NULL;
+    int memory_used = this->allocateMemEM(&emissionProb, &alpha, &beta, &gamma, &xsi, &c, &Pk, maxLen, nsample);
+
+    double* numer = (double*)malloc(sizeof(double)*this->K);
+    double* denom = (double*)malloc(sizeof(double)*this->K);
+
+    for(i=0; i<this->K; i++)
+    {
+        dirScore[i] = 0;
+        numer[i] = 0;
+        denom[i] = 0;
+    }
+
+    for(n=0; n<nsample; n++)
+    {
+        if(fixedEmission == NULL)
+        {
+            this->calcEmissionProbs(observations, emissionProb, T, n, flags, state2flag, revop, isNaN, ncores, 0, couples);
+        }
+        else
+        {
+            if(fixedEmission != NULL)
+            {
+                for(i=0; i<this->K; i++)
+                {
+                    for(t=0; t<T[n]; t++)
+                    {
+                        emissionProb[i][t] = fixedEmission[n][i][t];
+                    }
+                }
+            }
+        }
+// calculate alpha and beta
+        this->getAlphaBeta(observations, alpha, beta, c, emissionProb, T, n, ncores, effective_zero, 0);
+        this->getGamma(alpha, beta, c,  emissionProb, gamma, T, n, ncores, 0, 0);
+        for(t=0; t<T[n]; t++)
+        {
+            for(i=0; i<this->K; i++)
+            {
+                if(couples[i] >= 0)
+                {
+                    numer[i] += fabs(gamma[t][i]-gamma[t][couples[i]]);
+                    denom[i] += gamma[t][i]+gamma[t][couples[i]];
+                }
+            }
+
+        }
+    }
+
+    for(i=0; i<this->K; i++)
+    {
+        dirScore[i] = numer[i]/denom[i];
+//	printf("(%d,%d)=%f\n", i, dirScore[i], couples[i]);
+    }
+
+    int memory_free = this->deallocateMemEM(emissionProb, alpha, beta, gamma, xsi, c, Pk, maxLen, nsample);
+    free(numer);
+    free(denom);
+
 }
 
 
 void HMM::getGammaXsi(double** alpha, double** beta, double* c,  double** emissionProb, double** gamma, double*** xsi, int* T, int n, int ncores, double effective_zero, int verbose)
 {
     int iter;
-
+//effective_zero = -1;
     int p,q;
     int nzero_all = 0;
     int* nnonzeros = (int*)malloc(sizeof(int)*K);
@@ -420,27 +549,36 @@ void HMM::getGammaXsi(double** alpha, double** beta, double* c,  double** emissi
     }
 
     int seglen = (int) T[n]/ncores;
+    if(ncores > T[n])
+    {
+        ncores = T[n];
+    }
     int* myBounds = (int*)malloc(sizeof(int)*(ncores+1));
 
     myBounds[0] = 0;
+//Rprintf("myBounds[%d]=%d\n", 0, myBounds[0]);
     for(iter=1; iter<ncores; iter++)
     {
         myBounds[iter] = myBounds[iter-1]+seglen;
+//Rprintf("myBounds[%d]=%d\n", iter, myBounds[iter]);
     }
     myBounds[ncores] = T[n];
+//	Rprintf("myBounds[%d]=%d\n", ncores, myBounds[ncores]);
 
     int curr_core;
+//Rprintf("ncores=%d\n", ncores);
     double **myTransMat = this->A->getTransMat();
 
-    #pragma omp parallel for num_threads(ncores)
+#pragma omp parallel for
     for(curr_core=0; curr_core<ncores; curr_core++)
     {
+//Rprintf("pid=%d\n", curr_core);
         int i,j,t,k;
         double denom;
         for(t=myBounds[curr_core]; t<myBounds[curr_core+1]; t++)
         {
 
-            // gamma
+// gamma
             denom = 0.0;
             for(i=0 ; i<this->K; i++)
             {
@@ -450,25 +588,36 @@ void HMM::getGammaXsi(double** alpha, double** beta, double* c,  double** emissi
             for (i=0; i<this->K ; i++)
             {
                 gamma[t][i] /= denom ;
+//	Rprintf("gamm[%d][%d]=%f\n",i, t, gamma[t][i]);
             }
+//Rprintf("%f \n", denom);
 
-            // xsi
+// xsi
             if(t<T[n]-1)
             {
                 for(i=0 ; i<this->K; i++)
                 {
                     denom = 1/c[t] * beta[t][i];
-                    /*for(k=0 ; k<this->K; k++) {
-                        xsi[t][i][k] = (gamma[t][i]*myTransMat[i][k]*emissionProb[k][t+1] * beta[t+1][k])  / denom;
-                    }*/
+/*for(k=0 ; k<this->K; k++) {
+    xsi[t][i][k] = (gamma[t][i]*myTransMat[i][k]*emissionProb[k][t+1] * beta[t+1][k])  / denom;
+}*/
                     for(k=0 ; k<nnonzeros[i]; k++)
                     {
                         xsi[t][i][transitions[i][k]] = (gamma[t][i]*myTransMat[i][transitions[i][k]]*emissionProb[transitions[i][k]][t+1] * beta[t+1][transitions[i][k]])  / denom;
                     }
                 }
             }
+
         }
     }
+
+    free(myBounds);
+    free(nnonzeros);
+    for(p=0; p<K; p++)
+    {
+        free(transitions[p]);
+    }
+    free(transitions);
 
 }
 
@@ -537,6 +686,7 @@ int HMM::allocateMemEM(double*** emissionProb, double*** alpha, double*** beta, 
     {
         Rprintf("Baum-Welch needs %lf MB of memory.\n", megabytes_used);
     }
+//Rprintf("Available system memory: %d\n", (unsigned int) getTotalSystemMemory());
     return memory_used;
 }
 
@@ -560,18 +710,24 @@ int HMM::deallocateMemEM(double** emissionProb, double** alpha, double** beta, d
 
     for(t=0; t<maxLen; t++)
     {
+//Rprintf("%d\n",t);
         free(alpha[t]);
+//Rprintf("alpha\n");
         memory_free += sizeof(double)*this->K;
         free(beta[t]);
+//Rprintf("beta\n");
         memory_free += sizeof(double)*this->K;
         free(gamma[t]);
+//	Rprintf("gamma\n");
         memory_free += sizeof(double)*this->K;
 
         for(i=0; i<K; i++)
         {
+//Rprintf("%d\n", i);
             free(xsi[t][i]);
             memory_free += sizeof(double)*this->K;
         }
+//Rprintf("xsi\n");
         free(xsi[t]);
         memory_free += sizeof(double)*this->K;
     }
@@ -592,7 +748,11 @@ int HMM::deallocateMemEM(double** emissionProb, double** alpha, double** beta, d
 void HMM::updateSampleAux(double*** observations, int* T, int n, double** alpha, double** beta, double** gamma, double*** xsi, double* Pk, int* state2flag, int* couples, int* revop, int** isNaN, double*** fixedEmission, SEXP bidirOptimParams, SEXP emissionPrior, int ncores, double effective_zero, int verbose)
 {
     int i;
-    // udpate auxiliary terms for initial state probabilities
+    if(DEBUG)
+    {
+//	Rprintf("Calculating sample auxiliaries.\n");
+    }
+// udpate auxiliary terms for initial state probabilities
     for(i=0; i<this->K; i++)
     {
         if(couples == NULL)
@@ -601,11 +761,11 @@ void HMM::updateSampleAux(double*** observations, int* T, int n, double** alpha,
         }
         else
         {
-            this->pi->updateSampleCoupled(gamma, i, couples, bidirOptimParams);
+            this->pi->updateSampleCoupled(gamma, i, couples, bidirOptimParams, T, n);
         }
     }
 
-    // update auxiliary terms for transition matrix
+// update auxiliary terms for transition matrix
     if(couples == NULL)
     {
         this->A->updateAuxiliaries(gamma, xsi,  Pk, T, n, isNaN, ncores, effective_zero, verbose);
@@ -640,7 +800,7 @@ void HMM::updateSampleAux(double*** observations, int* T, int n, double** alpha,
         myStateBuckets[i] = myStateBuckets[i]+myStateBuckets[i-1];
     }
 
-    // update auxiliary terms for emission functions
+// update auxiliary terms for emission functions
     if(fixedEmission == NULL)
     {
 
@@ -650,14 +810,14 @@ void HMM::updateSampleAux(double*** observations, int* T, int n, double** alpha,
         }
 
         int k;
-        #pragma omp parallel for num_threads(ncores)
+#pragma omp parallel for
         for(k=1; k<ncores+1; k++)
         {
 
             int state;
             for(state=myStateBuckets[k-1]; state<myStateBuckets[k]; state++)
             {
-                // coupled states and reverse observations
+                                                  // coupled states and reverse observations
                 if(couples != NULL && revop != NULL && couples[state] != state)
                 {
                     if(DEBUG)
@@ -667,7 +827,7 @@ void HMM::updateSampleAux(double*** observations, int* T, int n, double** alpha,
                     int p = couples[state];
                     this->emissions[state]->updateAuxiliariesCoupledRevop(observations, gamma, Pk, T, n, state, p, state2flag, revop, isNaN);
                 }
-                // coupled states and no reverse observations
+                                                  // coupled states and no reverse observations
                 else if(couples != NULL && revop == NULL && state2flag != NULL && couples[state] != state)
                 {
                     if(DEBUG)
@@ -677,8 +837,7 @@ void HMM::updateSampleAux(double*** observations, int* T, int n, double** alpha,
                     int p = couples[state];
                     this->emissions[state]->updateAuxiliariesCoupled(observations, gamma, Pk, T, n, state, p, isNaN);
                 }
-                // no coupled states and no reverse observations
-                else                              
+                else                              // no coupled states and no reverse observations
                 {
                     if(DEBUG)
                     {
@@ -688,14 +847,17 @@ void HMM::updateSampleAux(double*** observations, int* T, int n, double** alpha,
                 }
             }
         }
+
     }
+
+    free(myStateBuckets);
 }
 
 
-void HMM::updateModelParams(double*** observations, int nsample, int* state2flag, int* couples, int* revop, int verbose, int updateTransMat, int** isNaN, double*** fixedEmission, SEXP bidirOptimParams, SEXP emissionPrior, int ncores, double effective_zero, int* myStateBuckets, double* Pk, int curriter, int currN)
+void HMM::updateModelParams(double*** observations, int nsample, int* state2flag, int* couples, int* revop, int verbose, int updateTransMat, int** isNaN, double*** fixedEmission, SEXP bidirOptimParams, SEXP emissionPrior, int ncores, double effective_zero, int* myStateBuckets, double* Pk, int curriter, int currN, int* T)
 {
 
-    // Update transition matrix
+// Update transition matrix
     if(updateTransMat == 1)
     {
         if(LENGTH(bidirOptimParams) > 0)
@@ -712,53 +874,91 @@ void HMM::updateModelParams(double*** observations, int nsample, int* state2flag
         }
     }
 
-    // update initial state probabilities
-    this->pi->update(nsample, bidirOptimParams);
+// update initial state probabilities
+    if(couples == NULL)
+    {
+        this->pi->update(nsample, bidirOptimParams, NULL);
+    }
+    else
+    {
+        this->pi->update(nsample, bidirOptimParams, T);
+    }
 
-    // update parameters of emissions
+// update parameters of emissions
     if(fixedEmission == NULL)
     {
         if(verbose)
         {
             Rprintf("Updating emission distributions.                                                            \r");
         }
+
         int k;
-        #pragma omp parallel for num_threads(ncores)
-        for(k=1; k<ncores+1; k++)
+//	#pragma omp parallel for
+//for(k=1; k<ncores+1; k++) {
+        int state;
+//#pragma omp parallel for
+        for(state=0; state<this->K; state++)
         {
-            int state;
-            for(state=myStateBuckets[k-1]; state<myStateBuckets[k]; state++)
+//for(i=0; i<K; i++) {
+                                                  // coupled states and reverse observations
+            if(couples != NULL && revop != NULL && couples[state] != state)
             {
-                // coupled states and reverse observations
-                if(couples != NULL && revop != NULL && couples[state] != state)
+//	printf("k=%d\n", state2flag[state]);
+                int p = couples[state];
+                if(state2flag[state] != 1)        // IMPORTANT: states need to be in the proper order!
                 {
-                    int p = couples[state];
-                    if(DEBUG)
-                    {
-                        Rprintf("Updating emission parameters: +couples +rev.observations\n");
-                    }
-                    this->emissions[state]->updateCoupledRevop(observations, Pk, p, state2flag, revop, this->emissions[p]->getParameter()->getGammaAux(), isNaN, emissionPrior, currN);
+                    this->emissions[state]->updateCoupledRevop(observations, Pk, p, state2flag, revop, this->emissions[p]->getParameter()->getGammaAux(), isNaN, emissionPrior, currN, ncores);
                 }
-                // coupled states and no reverse observations
-                else if(couples != NULL && revop == NULL && state2flag != NULL && couples[state] != state)
+/*else {
+    this->emissions[state]->setParsToTwin(this->emissions[couples[state]], currN, observations);
+}*/
+                if(DEBUG)
                 {
-                    if(DEBUG)
-                    {
-                        Rprintf("Updating emission parameters: +couples -rev.observations\n");
-                    }
-                    this->emissions[state]->update(observations, Pk, isNaN, emissionPrior, currN);
+                    Rprintf("Updating emission parameters: +couples +rev.observations\n");
                 }
-                else                              // no coupled states and no reverse observations
+            }
+                                                  // coupled states and no reverse observations
+            else if(couples != NULL && revop == NULL && state2flag != NULL && couples[state] != state)
+            {
+                if(DEBUG)
                 {
-                    if(DEBUG)
-                    {
-                        Rprintf("Updating emission parameters: -couples -rev.observations\n");
-                    }
-                    this->emissions[state]->update(observations, Pk, isNaN, emissionPrior, currN);
+                    Rprintf("Updating emission parameters: +couples -rev.observations\n");
+                }
+                this->emissions[state]->update(observations, Pk, isNaN, emissionPrior, currN, ncores);
+            }
+            else                                  // no coupled states and no reverse observations
+            {
+                if(DEBUG)
+                {
+                    Rprintf("Updating emission parameters: -couples -rev.observations\n");
+                }
+                this->emissions[state]->update(observations, Pk, isNaN, emissionPrior, currN, ncores);
+            }
+        }
+//}
+
+        for(k=0; k<this->K; k++)
+        {
+            if(state2flag != NULL)
+            {
+                if(state2flag[k] == 1)            // IMPORTANT: states need to be in the proper order!
+                {
+                    this->emissions[k]->setParsToTwin(this->emissions[couples[k]], currN, observations);
                 }
             }
         }
+
+        for(k=0; k<this->K; k++)
+        {
+            this->emissions[k]->computeShared(this->emissions, this->K);
+        }
+
+        for(k=0; k<this->K; k++)
+        {
+            this->emissions[k]->resetShared();
+        }
     }
+
 }
 
 
@@ -766,6 +966,11 @@ list<double> HMM::BaumWelch(double*** observations, int* T, int nsample, int max
 {
     int t,i,j,n;
 
+    double allT = 0;
+    for(n=0; n<nsample; n++)
+    {
+        allT += T[n];
+    }
     list<double> log_lik;
     double old_prior =  -(double)INFINITY;
     int iter = 0;
@@ -805,7 +1010,7 @@ list<double> HMM::BaumWelch(double*** observations, int* T, int nsample, int max
         myStateBuckets[i] = myStateBuckets[i]+myStateBuckets[i-1];
     }
 
-    // allocate memory for auxiliary variables
+// allocate memory for auxiliary variables
     double*** xsi = NULL;
     double** alpha = NULL;
     double** beta = NULL;
@@ -820,14 +1025,14 @@ list<double> HMM::BaumWelch(double*** observations, int* T, int nsample, int max
     int now = 0;
     double currDiff = (double)INFINITY;
 
-    // calculate Log-Likelihood and E-Step for inital model
+// calculate Log-Likelihood and E-Step for inital model
     for(n=0; n<nsample; n++)
     {
 
-        // calculate emission probabilities
+// calculate emission probabilities
         if(fixedEmission == NULL)
         {
-            this->calcEmissionProbs(observations, emissionProb, T, n, flags, state2flag, revop, isNaN, ncores, verbose);
+            this->calcEmissionProbs(observations, emissionProb, T, n, flags, state2flag, revop, isNaN, ncores, verbose, couples);
         }
         else
         {
@@ -842,20 +1047,20 @@ list<double> HMM::BaumWelch(double*** observations, int* T, int nsample, int max
                 }
             }
         }
-        // calculate alpha and beta
+// calculate alpha and beta
         this->getAlphaBeta(observations, alpha, beta, c, emissionProb, T, n, ncores, effective_zero, verbose);
 
-        // Calculate gamma and xsi
+// Calculate gamma and xsi
         this->getGammaXsi(alpha, beta, c, emissionProb, gamma, xsi, T, n, ncores, effective_zero, verbose);
 
-        // Calculate weight of the current sample
+// Calculate weight of the current sample
         Pk[n] = 0;
         for(i=0; i<this->K; i++)
         {
             Pk[n] += alpha[T[n]-1][i];
         }
 
-        // calculate Log-Likelihood of the current model
+// calculate Log-Likelihood of the current model
         for(t=0; t<T[n]; t++)
         {
             if(isNaN[n][t] == 0)
@@ -864,28 +1069,40 @@ list<double> HMM::BaumWelch(double*** observations, int* T, int nsample, int max
             }
         }
 
-        // update auxiliary terms for the current sample n
+// update auxiliary terms for the current sample n
+//	Rprintf("n HERE: %d\n", n);
         this->updateSampleAux(observations, T, n, alpha, beta, gamma, xsi, Pk, state2flag, couples, revop, isNaN, fixedEmission, bidirOptimParams, emissionPrior, ncores, effective_zero, verbose);
+//Rprintf("after\n");
         if(incrementalEM)
         {
-            this->updateModelParams(observations, nsample, state2flag, couples, revop, verbose, updateTransMat, isNaN, fixedEmission, bidirOptimParams, emissionPrior, ncores, effective_zero, myStateBuckets, Pk, iter, n);
+//Rprintf("incremental\n");
+            this->updateModelParams(observations, nsample, state2flag, couples, revop, verbose, updateTransMat, isNaN, fixedEmission, bidirOptimParams, emissionPrior, ncores, effective_zero, myStateBuckets, Pk, iter, n, T);
+
         }
     }
 
-    // add prior for emission (gaussian)
+// add prior for emission (gaussian)
     const char* llh = "Log-Likelihood";
     double prior = 0;
 
-    if(LENGTH(emissionPrior) != 0)
-    {
-        for(i=0; i<K; i++)
-        {
+/*	if((LENGTH(emissionPrior) > 1) & (INTEGER(getListElement(emissionPrior, "useLongPrior"))[0] == 0)) {
+        for(i=0; i<K; i++) {
             double temp_prior = this->emissions[i]->Prior(emissionPrior);
             prior += temp_prior;
         }
         old_prior = prior;
         llh = "Log-Posterior";
     }
+    else if((LENGTH(emissionPrior) > 1) & (INTEGER(getListElement(emissionPrior, "useLongPrior"))[0] == 1)) {
+        for(i=0; i<K; i++) {
+            for(n=0; n<nsample; n++) {
+double temp_prior = T[n]*this->emissions[i]->Prior(emissionPrior);
+prior += temp_prior;
+}
+}
+old_prior = prior;
+llh = "Log-Posterior";
+}*/
 
     new_log_lik = -new_log_lik+prior;
     if(verbose)
@@ -893,25 +1110,36 @@ list<double> HMM::BaumWelch(double*** observations, int* T, int nsample, int max
         Rprintf("Iteration %d: %s of initial model: %f                                                        \n", 0, llh, new_log_lik);
     }
 
-    while(iter == 0 | ((iter < maxIters &&  fabs(currDiff)>convergence) | (iter < maxIters &&  now != before) ))
+    log_lik.push_back(new_log_lik);
+
+    while(((iter < maxIters &&  fabs(currDiff)>convergence) | (iter < maxIters &&  now != before) ))
     {
+        if(currDiff < 0)
+        {
+            warning("Likelihood decresead in iteration %d.\n", iter);
+            break;
+        }
+//	Rprintf("now=%d, before=%d, currDiff=%f, iter=%d\n", now, before, currDiff, iter);
         R_CheckUserInterrupt();
+
         old_log_lik = new_log_lik;
+
         new_log_lik = 0;
 
         if(! incrementalEM)
         {
-            this->updateModelParams(observations, nsample, state2flag, couples, revop, verbose, updateTransMat, isNaN, fixedEmission, bidirOptimParams, emissionPrior, ncores, effective_zero, myStateBuckets, Pk, iter, -1);
+//	Rprintf("! incremental => %d\n", incrementalEM);
+
+            this->updateModelParams(observations, nsample, state2flag, couples, revop, verbose, updateTransMat, isNaN, fixedEmission, bidirOptimParams, emissionPrior, ncores, effective_zero, myStateBuckets, Pk, iter, -1, T);
         }
 
-        // begin new sample (e.g. chromosome) => calculate E-Step for all samples of new model
+// begin new sample (e.g. chromosome) => calculate E-Step for all samples of new model
         for(n=0; n<nsample; n++)
         {
-
-            // calculate emission probabilities
+// calculate emission probabilities
             if(fixedEmission == NULL)
             {
-                this->calcEmissionProbs(observations, emissionProb, T, n, flags, state2flag, revop, isNaN, ncores, verbose);
+                this->calcEmissionProbs(observations, emissionProb, T, n, flags, state2flag, revop, isNaN, ncores, verbose, couples);
             }
             else
             {
@@ -927,20 +1155,20 @@ list<double> HMM::BaumWelch(double*** observations, int* T, int nsample, int max
                 }
             }
 
-            // calculate alpha and beta
+// calculate alpha and beta
             this->getAlphaBeta(observations, alpha, beta, c, emissionProb, T, n, ncores, effective_zero, verbose);
 
-            // Calculate gamma and xsi
+// Calculate gamma and xsi
             this->getGammaXsi(alpha, beta, c, emissionProb, gamma, xsi, T, n, ncores, effective_zero, verbose);
 
-            // Calculate weight of the current sample
+// Calculate weight of the current sample
             Pk[n] = 0;
             for(i=0; i<this->K; i++)
             {
                 Pk[n] += alpha[T[n]-1][i];
             }
 
-            // calculate Log-Likelihood of the current model
+// calculate Log-Likelihood of the current model
             for(t=0; t<T[n]; t++)
             {
                 if(isNaN[n][t] == 0)
@@ -949,38 +1177,52 @@ list<double> HMM::BaumWelch(double*** observations, int* T, int nsample, int max
                 }
             }
 
-            // calculate new LLH
+                                                  // calculate new LLH
             if(LENGTH(bidirOptimParams) > 0 & iter > 1)
             {
                 before = INTEGER(getListElement(bidirOptimParams, "nrm"))[LENGTH(getListElement(bidirOptimParams, "nrm"))-3];
                 now = INTEGER(getListElement(bidirOptimParams, "nrm"))[LENGTH(getListElement(bidirOptimParams, "nrm"))-2];
             }
 
-            // update auxiliary terms for the current sample n
+// update auxiliary terms for the current sample n
             this->updateSampleAux(observations, T, n, alpha, beta, gamma, xsi, Pk, state2flag, couples, revop, isNaN, fixedEmission, bidirOptimParams, emissionPrior, ncores, effective_zero, verbose);
             if(incrementalEM)
             {
-                this->updateModelParams(observations, nsample, state2flag, couples, revop, verbose, updateTransMat, isNaN, fixedEmission, bidirOptimParams, emissionPrior, ncores, effective_zero, myStateBuckets, Pk, iter, n);
+//Rprintf("incremental\n");
+
+                this->updateModelParams(observations, nsample, state2flag, couples, revop, verbose, updateTransMat, isNaN, fixedEmission, bidirOptimParams, emissionPrior, ncores, effective_zero, myStateBuckets, Pk, iter, n, T);
             }
         }
-        // end current sample
+// end current sample
 
-        // add prior for emission (gaussian)
+// add prior for emission (gaussian)
+
         const char* llh = "Log-Likelihood";
         double prior = 0;
-        if(LENGTH(emissionPrior) != 0)
-        {
-            for(i=0; i<K; i++)
-            {
-                double temp_prior = this->emissions[i]->Prior(emissionPrior);
-                prior += temp_prior;
-            }
-            old_prior = prior;
-            llh = "Log-Posterior";
-        }
+/*if((LENGTH(emissionPrior) > 1) & (INTEGER(getListElement(emissionPrior, "useLongPrior"))[0] == 0)) {
+    for(i=0; i<K; i++) {
+        double temp_prior = this->emissions[i]->Prior(emissionPrior);
+        prior += temp_prior;
+    }
+    old_prior = prior;
+    llh = "Log-Posterior";
+}
+else if((LENGTH(emissionPrior) > 1) & (INTEGER(getListElement(emissionPrior, "useLongPrior"))[0] == 1)) {
+    for(i=0; i<K; i++) {
+        for(n=0; n<nsample; n++) {
+double temp_prior = T[n]*this->emissions[i]->Prior(emissionPrior);
+prior += temp_prior;
+}
+}
+old_prior = prior;
+llh = "Log-Posterior";
+}*/
 
+//Rprintf("new:%f\n", -new_log_lik);
         new_log_lik = -new_log_lik+prior;
+
         currDiff = (new_log_lik-old_log_lik)/fabs(old_log_lik);
+
         constraints_changed = "";
         if(iter > 0 && LENGTH(bidirOptimParams) != 0 & now  != before & DEBUG)
         {
@@ -995,13 +1237,59 @@ list<double> HMM::BaumWelch(double*** observations, int* T, int nsample, int max
         log_lik.push_back(new_log_lik);
 
     }
-    // end while
+// end while
+//Rprintf("now=%d, before=%d, currDiff=%f, iter=%d\n", now, before, currDiff, iter);
+
+/*
+// Update transition matrix
+if(updateTransMat == 1) {
+    if(LENGTH(bidirOptimParams) > 0) {
+        this->A->update(bidirOptimParams);
+    }
+    else if(couples == NULL && updateTransMat == 1) {
+        this->A->update();
+    }
+    else {
+        this->A->update(couples);
+}
+}
+
+// update initial state probabilities
+this->pi->update(nsample, bidirOptimParams);
+
+// update parameters of emissions
+if(fixedEmission == NULL) {
+//Rprintf("yes\n");
+for(i=0; i<K; i++) {
+if(couples != NULL && revop != NULL && couples[i] != i) { // coupled states and reverse observations
+int p = couples[i];
+if(DEBUG) {
+Rprintf("Updating emission parameters: +couples +rev.observations\n");
+}
+this->emissions[i]->updateCoupledRevop(observations, Pk, p, state2flag, revop, this->emissions[p]->getParameter()->getGammaAux(), isNaN, emissionPrior);
+}
+else if(couples != NULL && revop == NULL && state2flag != NULL && couples[i] != i) { // coupled states and no reverse observations
+if(DEBUG) {
+Rprintf("Updating emission parameters: +couples -rev.observations\n");
+}
+this->emissions[i]->update(observations, Pk, isNaN, emissionPrior);
+}
+else { // no coupled states and no reverse observations
+if(DEBUG) {
+Rprintf("Updating emission parameters: -couples -rev.observations\n");
+}
+this->emissions[i]->update(observations, Pk, isNaN, emissionPrior);
+}
+}
+}*/
 
     int memory_free = this->deallocateMemEM(emissionProb, alpha, beta, gamma, xsi, c, Pk, maxLen, nsample);
     if(memory_free == memory_used && DEBUG_MEMORY)
     {
         Rprintf("Memory for auxiliary Baum-Welch variables successfully deallocated.\n");
     }
+
+    free(myStateBuckets);
 
     return log_lik;
 }
@@ -1029,12 +1317,12 @@ void HMM::Viterbi(int **S, double*** obs, int nsample, int* T, int verbose, int*
             psi[t] = (int*)malloc(sizeof(int)*this->K);
         }
         double curr_emission;
-        // Initialization
+// Initialization
         for(i=0; i<this->K; i++)
         {
             if(fixedEmission == NULL)
             {
-                delta[0][i] = log(this->pi->getInitialProb()[i])+log(this->emissions[i]->calcEmissionProbability(obs[n][0], isNaN[n][0]));
+                delta[0][i] = log(this->pi->getInitialProb()[i])+log(this->emissions[i]->calcEmissionProbability(obs[n][0], isNaN[n][0], n));
             }
             else
             {
@@ -1049,10 +1337,11 @@ void HMM::Viterbi(int **S, double*** obs, int nsample, int* T, int verbose, int*
             psi[0][i] = 0;
         }
 
-        // Recursion
+// Recursion
         for(t=1; t<T[n]; t++)
         {
-        R_CheckUserInterrupt();
+//Rprintf("t=%d\n", t);
+//R_CheckUserInterrupt();
             for(j=0; j<this->K; j++)
             {
                 delta[t][j] = -(double)INFINITY;
@@ -1064,7 +1353,7 @@ void HMM::Viterbi(int **S, double*** obs, int nsample, int* T, int verbose, int*
 
                     if(fixedEmission == NULL)
                     {
-                        curr_val = delta[t-1][i]+log(this->A->getTransMat()[i][j])+log(this->emissions[j]->calcEmissionProbability(obs[n][t], isNaN[n][t]));
+                        curr_val = delta[t-1][i]+log(this->A->getTransMat()[i][j])+log(this->emissions[j]->calcEmissionProbability(obs[n][t], isNaN[n][t], n));
                     }
                     else
                     {
@@ -1079,6 +1368,7 @@ void HMM::Viterbi(int **S, double*** obs, int nsample, int* T, int verbose, int*
                     {
                         delta[t][j] = curr_val;
                     }
+//	curr_val = delta[t-1][i];//+log(this->A->getTransMat()[i][j]);
                     if(curr_val > curr_max)
                     {
                         curr_max = curr_val;
@@ -1089,7 +1379,7 @@ void HMM::Viterbi(int **S, double*** obs, int nsample, int* T, int verbose, int*
             }
         }
 
-        // Termination
+// Termination
         double P = -(double)INFINITY;
         for(i=0; i<this->K; i++)
         {

@@ -13,31 +13,32 @@ using namespace std;
 
 class TransitionMatrix
 {
-protected:
+    protected:
 
-    int K;
-    double** A;
-    double** updateNumerator;
-    double** updateDenominator;
+        int K;
+        double** A;                               //!<@brief KxK matrix of transition probabilities between states.
+        double** updateNumerator;
+        double** updateDenominator;
+// TODO: also constraints here!
 
-public:
+    public:
 
-    TransitionMatrix(double **A, int K);
+        TransitionMatrix(double **A, int K);
 
-    /**
-     * Destructor for HMM. Sets previously allocated memory of all class attributes free.
-     *
-     */
-    virtual ~TransitionMatrix();
+/**
+ * Destructor for HMM. Sets previously allocated memory of all class attributes free.
+ *
+ */
+        virtual ~TransitionMatrix();
 
-    double** getTransMat();
-    int getK();
-    void update(double effective_zero);
-    void update(int* couples, double effective_zero);
-    void update(SEXP bidirOptimParams);
-    void updateAuxiliaries(double** gamma, double*** xsi,  double* Pk, int* T, int n, int** isNaN, int ncores, double effective_zero, int verbose);
-    void updateAuxiliaries(double** gamma, double*** xsi,  double* Pk, int* T, int n, int* couples, SEXP bidirOptimParams, int** isNaN, int ncores, double effective_zero, int verbose);
-    void finalize();
-    SEXP callRsolnp(SEXP pars);
+        double** getTransMat();
+        int getK();
+        void update(double effective_zero);
+        void update(int* couples, double effective_zero);
+        void update(SEXP bidirOptimParams);
+        void updateAuxiliaries(double** gamma, double*** xsi,  double* Pk, int* T, int n, int** isNaN, int ncores, double effective_zero, int verbose);
+        void updateAuxiliaries(double** gamma, double*** xsi,  double* Pk, int* T, int n, int* couples, SEXP bidirOptimParams, int** isNaN, int ncores, double effective_zero, int verbose);
+        void finalize();
+        SEXP callRsolnp(SEXP pars);
 };
 #endif

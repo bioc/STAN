@@ -23,8 +23,8 @@ opts_chunk$set(tidy=FALSE,dev="png",fig.show="hide",
 
 
 
-\author{Bendikt Zacher$^{1,2,*}$, Julien Gagneur$^{1}$, Achim Tresch$^{1,2,3}$ \\[1em]
-\small{$^{1}$ Gene Center and Department of Biochemistry, LMU, Munich, Germany} \\ \small{$^{2}$ Institute for
+\author{Bendikt Zacher$^{1,2,*}$, Julia Ertl$^{1}$, Julien Gagneur$^{1}$, Achim
+Tresch$^{1,2,3}$ \\[1em] \small{$^{1}$ Gene Center and Department of Biochemistry, LMU, Munich, Germany} \\ \small{$^{2}$ Institute for
 Genetics, University of Cologne, Cologne, Germany} \\
 \small{$^{3}$
 Max Planck Institute for Plant Breeding Research, Cologne, Germany} \\
@@ -32,727 +32,637 @@ Max Planck Institute for Plant Breeding Research, Cologne, Germany} \\
 \small{\texttt{$^*$zacher (at) genzentrum.lmu.de}}}
 
 
-\title{STrand-specific ANnotation of genomic data}
+\title{The genomic STate ANnotation package}
 
 \begin{document}
 
 \maketitle
 
-\vspace{2.5cm}
+\vspace{1cm}
+
+
+ \begin{center}
+    \begin{tabular}{ | l | }
+      \hline \\
+      If you use \Biocpkg{STAN} in published research, please cite:  \\
+      \\
+      Zacher, B.  and Lidschreiber, M.  and Cramer, P.  and Gagneur, J.  and
+      Tresch, A.  (2014): \\ \textbf{Annotation of genomics data using
+      bidirectional hidden Markov models unveils} \\
+      \textbf{variations in Pol II transcription cycle}  \emph{Mol. Syst. Biol.}
+      \textbf{10}:768 \\
+      \\ \hline 
+    \end{tabular}
+  \end{center}
+
 
 \tableofcontents
 
 
-%save(Sigma, flags, initProb, means, nStates, observations, stateLabel,
-%transMat, file="../../data/example.rda")
-
 \vspace{1cm}
-
 
 \newpage
 
 \section{Quick start}
-Learning a (bd)HMM simply requires an initial model estimate of class
-\Rclass{HMM} or \Rclass{bdHMM}. The function \Rfunction{fitHMM()} optimizes
-the model parameters and \Rfunction{getViterbi()} infers the most
-likely state annotation as the Viterbi path.
 
 \vspace{0.25cm}
-<<Quick start>>=
-library(STAN)
-data(example)
-# Fitting a HMM
-hmm_fitted = fitHMM(observations, hmm_ex)
-# Fitting a bdHMM
-bdhmm_fitted = fitHMM(observations, bdhmm_ex, dirFlags=flags)
-# Calculating the viterbi paths
-viterbi_bdhmm = getViterbi(bdhmm_fitted$hmm, observations)
-viterbi_hmm = getViterbi(hmm_fitted$hmm, observations)
+<<Quick_start, results="hide", eval=FALSE>>=
+## Loading library and data
+library(STAN) 
+data(trainRegions)
+data(pilot.hg19)
+
+## Model initialization
+hmm_nb = initHMM(trainRegions[1:3], nStates=10, "NegativeBinomial")
+
+## Model fitting
+hmm_fitted_nb = fitHMM(trainRegions[1:3], hmm_nb, maxIters=10)
+
+## Calculate state path
+viterbi_nb = getViterbi(hmm_fitted_nb, trainRegions[1:3])
+
+## Convert state path to GRanges object
+viterbi_nb_gm12878 = viterbi2GRanges(viterbi_nb, pilot.hg19, 200)
 @
+\vspace{0.25cm}
 
 
 \section{Introduction}
-\Biocpkg{STAN} (\textbf{ST}rand-specic \textbf{AN}notation of genomic data)
-implements bidirectional Hidden Markov Models (bdHMM), which are designed for
-studying directed genomic processes, such as gene transcription, DNA
-replication, recombination or DNA repair by integrating genomic data.
-bdHMMs model a sequence of successive observations (e.g. ChIP or RNA
-measurements along the genome) by a discrete number of 'directed genomic
-states', which e.g. reflect distinct genome-associated complexes. Unlike
-standard HMM approaches, bdHMMs allow the integration of strand-specific (e.g. RNA) and
-non-strand-specific data (e.g. ChIP). Both cases are illustrated in this
-vignette. Application of \Biocpkg{STAN} is demonstrated on real ChIP-on-chip
-microarray data of yeast transcription factors \cite{zacher2014} and on
-ChIP-Sequencing data of human chromatin marks \cite{ernst2010}. For a more detailed
-description of the concept and theory of bdHMMs, we refer ther reader to \cite{zacher2014}. To load the package, type:
+Genome segmentation with hidden Markov models has become a useful tool to
+annotate genomic elements, such as promoters and enhancers by data integration. \Biocpkg{STAN} (genomic
+\textbf{ST}ate \textbf{AN}notation) implements (bidirectional) Hidden Markov
+Models (HMMs) using a variety of different probability distributions, which
+can be used to model a wide range of current genomic data:
+
+\begin{itemize}
+  \item Multivariate gaussian: e.g. conutinuous microarray and
+  transformed sequencing data.
+  \item Poisson: e.g. discrete count data from sequencing experiments. 
+  \item (Zero-Inflated) Negative Binomial: e.g. discrete count data from
+  sequencing experiments.
+  \item Poisson Log-Normal: e.g. discrete count data from sequencing
+  experiments.
+   \item Negative Multinomial: e.g. discrete count data from
+   sequencing experiments.
+  \item Multinomial: e.g. methylation rates from bisulfite sequencing (in this
+  case it reduces to a Binomial) or binned nuceotide frequencies.
+  \item Bernoulli: Initially proposed by \cite{ernst2010} to model
+  presence/absence of chromatin marks (another example: transcription factor
+  binding).
+  \item Nucleotide distribution: e.g. nucleotide frequencies in the DNA
+  sequence.
+\end{itemize}
+
+The use of these distributions enables integrating a wide range of genomic data
+types (e.g.
+continuous, discrete, binary) to \textit{de novo} learn and annotate the genome into a given
+number of 'genomic states'.
+The 'genomic states' may for instance reflect distinct
+genome-associated protein complexes or describe recurring patterns of
+chromatin features, i.e. the 'chromatin state'. Unlike other tools,
+\Biocpkg{STAN} also allows for the integration of strand-specific (e.g. RNA) 
+and non-strand-specific data (e.g. ChIP) \cite{zacher2014}. In this vignette, we illustrate
+the use of \Biocpkg{STAN} by inferring 'chromatin states' from a small example
+data set of two Roadmap Epigenomics cell lines. Moreover, we show how to use
+strand-specific RNA expression with non-strand-specific ChIP data to infer
+'transcription states' in yeast. Before getting started the package needs to be
+loaded:
 
 \vspace{0.25cm}
-<<Loading library, results="hide">>=
+<<Loading_library, results="hide">>=
 library(STAN)
 @
 \vspace{0.25cm}
 
-\section{Integrating non-strand-specific with strand-specific data} 
-We demonstrate the application of \Biocpkg{STAN} by inferring 'directed genomic
-states' from a set of non-strand-specific ChIP measurements of nine
-transcription factors, nucleosomes and strand-specific mRNA expression in yeast.
+\section{Genomic state annotation of Roadmap Epigenomics Sequencing data}
 The data (or observations) provided to \Biocpkg{STAN} may consist of one or more
-observation sequences (e.g.
-chromosomes), which are contained in a \Rclass{list} of (position x experiment)
-matrices. \Robject{yeastTF\_databychrom\_ex} is a list  containing one
-observation sequence, comprising 1,375 successive observations from
-chromosome 4 measured with a high resolution tiling array in yeast \cite{zacher2014}:
+observation sequences (e.g. chromosomes), which are contained in a list of 
+(position x experiment) matrices.
+\Robject{trainRegions} is a list containing one three ENCODE pilot
+regions (stored in \Robject{pilot.hg19} as \Rclass{GRanges} object) with data
+for two cell types (K562:
+E123, Gm12878:
+E116) from the Roadmap Epigenomics project. The data set contains ChIP-Seq
+experiments of seven histone modifications (H3K4me1, H3K4me3, H3K36me3,
+H3K27me3, H3K27ac and H3K9ac), as well as DNase-Seq and genomic input.
 
 \vspace{0.25cm}
-<<yeast example data, echo=TRUE>>=
-data(yeastTF_databychrom_ex)
-str(yeastTF_databychrom_ex)
-data(yeastTF_probeAnno_ex)
-str(yeastTF_probeAnno_ex)
+<<Loading_example_data>>=
+data(trainRegions)
+names(trainRegions)
+str(trainRegions[c(1,4)])
 @
 \vspace{0.25cm}
 
+The genomic regions for each cell type in \Robject{trainRegions} are stored as a
+GRanges object in \Robject{pilot.hg19}:
+
+\vspace{0.25cm}
+<<Loading_example_data_regions>>=
+data(pilot.hg19)
+pilot.hg19
+@
+\vspace{0.25cm}
+
+
+Before model fitting, we calculate size factors to correct for the different
+different sequencing depths between cell lines.
+
+\vspace{0.25cm}
+<<Calculate size factors>>=
+celltypes = list("E123"=grep("E123", names(trainRegions)), 
+        "E116"=grep("E116", names(trainRegions)))
+sizeFactors = getSizeFactors(trainRegions, celltypes)
+sizeFactors
+@
+\vspace{0.25cm}
+
+Genome segmentation is carried out in \Biocpkg{STAN} using three functions:
+\Rfunction{initHMM}, \Rfunction{fitHMM} and \Rfunction{getViterbi}.
+\Rfunction{initHMM} initializes a model with \Robject{nStates} states for
+a given probability/emission distribution, which we set to  'PoissonLogNormal'
+in this example. \Rfunction{fitHMM} then optimizes model
+parameters using the Expectation-Maximization algorithm. Model parameters
+can be accessed with the \Rfunction{EmissionParams} function. Note that in this
+example, we set the maximal number of iteration to 10 in this case for speed
+reason. To ensure convergence this number should be higher in real world
+applications. After HMM fitting, the state annotation is calculated using the
+\Rfunction{getViterbi} function.
+
+\vspace{0.25cm}
+<<STAN-PoiLog>>=
+nStates = 10
+hmm_poilog = initHMM(trainRegions, nStates, "PoissonLogNormal", sizeFactors)
+hmm_fitted_poilog = fitHMM(trainRegions, hmm_poilog, sizeFactors=sizeFactors, maxIters=10)
+viterbi_poilog = getViterbi(hmm_fitted_poilog, trainRegions, sizeFactors)
+str(viterbi_poilog)
+@
+\vspace{0.25cm}
+
+In order to ease the use of other genomic applications and Bioconductor
+packages, the viterbi path can be converted into a \Rclass{GRanges}
+object.
+
+\vspace{0.25cm}
+<<STAN-PoiLog viterbi>>=
+viterbi_poilog_gm12878 = viterbi2GRanges(viterbi_poilog[1:3], regions=pilot.hg19, binSize=200)
+viterbi_poilog_gm12878
+@
+\vspace{0.25cm}
+
+Before giving some more details about further analysis and visualization of the
+models we repeat above segementations using the 'NegativeBinomial' emission
+functions.
+
+\vspace{0.25cm}
+<<STAN-NB, results="hide">>=
+hmm_nb = initHMM(trainRegions, nStates, "NegativeBinomial", sizeFactors)
+hmm_fitted_nb = fitHMM(trainRegions, hmm_nb, sizeFactors=sizeFactors, maxIters=10)
+viterbi_nb = getViterbi(hmm_fitted_nb, trainRegions, sizeFactors=sizeFactors)
+viterbi_nb_gm12878 = viterbi2GRanges(viterbi_nb[1:3], pilot.hg19, 200)
+@
+\vspace{0.25cm}
+
+In order to assign biologically meaningful roles to the inferred states we
+calculate the mean number of reads per 200 base pair bin for both
+segmentations.
+
+\vspace{0.25cm}
+<<STAN coverage, results="hide">>=
+avg_cov_nb = getAvgSignal(viterbi_nb, trainRegions)
+avg_cov_poilog = getAvgSignal(viterbi_poilog, trainRegions)
+@
+\vspace{0.25cm}
+
+
+<<STAN_coverage_plotting_pdf, echo=FALSE, eval=TRUE, results="hide">>=
+
+library(gplots)
+heat = c("dark blue", "dodgerblue4", "darkred", "red", "orange", "gold", "yellow")
+colfct = colorRampPalette(heat)
+colpal_statemeans = colfct(200)
+ord_nb = order(apply(avg_cov_nb,1,max), decreasing=TRUE)
+statecols_nb = rainbow(nStates)
+names(statecols_nb) = ord_nb
+
+pdf("nb_avg_cov.pdf")
+heatmap.2(log(avg_cov_nb+1)[as.character(ord_nb),], margins=c(8,7),srtCol=45, RowSideColors=statecols_nb[as.character(ord_nb)], dendrogram="none", Rowv=FALSE, Colv=FALSE, col=colpal_statemeans, trace="none", cellnote=round(avg_cov_nb,1)[as.character(ord_nb),], notecol="black")
+dev.off()
+
+ord_poilog = order(apply(avg_cov_poilog,1,max), decreasing=TRUE)
+statecols_poilog = rainbow(nStates)
+names(statecols_poilog) = ord_poilog
+pdf("poilog_avg_cov.pdf")
+heatmap.2(log(avg_cov_poilog+1)[ord_poilog,], RowSideColors=statecols_poilog[as.character(ord_poilog)], margins=c(8,7),srtCol=45, dendrogram="none", Rowv=FALSE, Colv=FALSE, col=colpal_statemeans, trace="none", cellnote=round(avg_cov_poilog,1)[ord_poilog,], notecol="black")
+dev.off()
+
+@
+
+These are then plotted using the \Rfunction{heatmap.2} function (see Figure
+\ref{fig:mean1}).
+
+\vspace{0.25cm}
+<<STAN_coverage_plotting, results="hide">>=
+## specify color palette
+library(gplots)
+heat = c("dark blue", "dodgerblue4", "darkred", "red", "orange", "gold", "yellow")
+colfct = colorRampPalette(heat)
+colpal_statemeans = colfct(200)
+
+## define state order and colors
+ord_nb = order(apply(avg_cov_nb,1,max), decreasing=TRUE)
+statecols_nb = rainbow(nStates)
+names(statecols_nb) = ord_nb
+heatmap.2(log(avg_cov_nb+1)[as.character(ord_nb),], margins=c(8,7), srtCol=45, 
+        RowSideColors=statecols_nb[as.character(ord_nb)], dendrogram="none", 
+        Rowv=FALSE, Colv=FALSE, col=colpal_statemeans, trace="none", 
+        cellnote=round(avg_cov_nb,1)[as.character(ord_nb),], notecol="black")
+
+
+## define state order and colors
+ord_poilog = order(apply(avg_cov_poilog,1,max), decreasing=TRUE)
+statecols_poilog = rainbow(nStates)
+names(statecols_poilog) = ord_poilog
+heatmap.2(log(avg_cov_poilog+1)[as.character(ord_poilog),], margins=c(8,7), srtCol=45, 
+        RowSideColors=statecols_poilog[as.character(ord_poilog)], dendrogram="none", 
+        Rowv=FALSE, Colv=FALSE, col=colpal_statemeans, trace="none", 
+        cellnote=round(avg_cov_poilog,1)[as.character(ord_poilog),], notecol="black")
+@
+\vspace{0.25cm}
+
+
+\begin{figure}[!htp]
+  \centering
+    \subfloat[]{{\includegraphics[width=8cm]{nb_avg_cov.pdf} }}%
+    \qquad
+    \subfloat[]{{\includegraphics[width=8cm]{poilog_avg_cov.pdf} }}%
+      \caption{Mean read
+    counts of the (a) 'NegativeBinomial' and (b) 'PoissonLogNormal' state
+    annotation}%
+  \label{fig:mean1}%
+ \end{figure}
+
+
+In order to visualize both \Biocpkg{STAN} segmentations, we
+convert the viterbi paths and the data to \Biocpkg{Gviz} objects.
+
+\vspace{0.25cm}
+<<STAN_convert_to_Gviz, results="hide">>=
+library(Gviz)
+from = start(pilot.hg19)[3]
+to = from+300000
+gvizViterbi_nb = viterbi2Gviz(viterbi_nb_gm12878, "chr11", "hg19", from, to, statecols_nb)
+gvizViterbi_poilog = viterbi2Gviz(viterbi_poilog_gm12878, "chr11", "hg19", from, to, 
+        statecols_poilog)
+gvizData = data2Gviz(trainRegions[3], pilot.hg19[3], 200, "hg19", col="black")
+@
+\vspace{0.25cm}
+
+Then, we use the \Rfunction{plotTracks} function to plot everything (see Figure
+\ref{fig:gviz1}).
+
+\vspace{0.25cm}
+<<STAN_plot_with_Gviz, eval=FALSE, results="hide">>=
+gaxis = GenomeAxisTrack()
+data(ucscGenes)
+mySize = c(1,rep(1.2,9), 0.5,0.5,3)
+plotTracks(c(list(gaxis), gvizData,gvizViterbi_nb,gvizViterbi_poilog,ucscGenes["chr11"]),
+        from=from, to=to, showFeatureId=FALSE, featureAnnotation="id", fontcolor.feature="black",
+        cex.feature=0.7, background.title="darkgrey", lwd=2, sizes=mySize)
+@
+\vspace{0.25cm}
+
+
+<<STAN_plot_with_Gviz_pdf, echo=FALSE, eval=TRUE, results="hide">>=
+
+gaxis = GenomeAxisTrack()
+data(ucscGenes)
+mySize = c(1,rep(1.2,9), 0.5,0.5,3)
+pdf("gviz_example.pdf", width=7*1.5)
+plotTracks(c(list(gaxis), gvizData,gvizViterbi_nb,gvizViterbi_poilog,ucscGenes["chr11"]),
+        from=from, to=to, showFeatureId=FALSE, featureAnnotation="id", fontcolor.feature="black",
+        cex.feature=0.7, background.title="darkgrey", lwd=2, sizes=mySize)#, stacking="dense")#, ylim=c(0,100))
+dev.off()
+@
+
+\begin{figure}[!htp]
+  \centering
+    \includegraphics[width=18cm]{gviz_example.pdf}
+    \caption{Genome Browser showing the 10 data tracks used for model
+    learning together with the 'Negativebinomial' (top) and 'PoissonLogNormal'
+    (bottom) segmentations and known UCSC gene annotations.}%
+    \label{fig:gviz1}%
+\end{figure}
+
+
+\subsection*{Modeling Sequencing data using other emission functions}
+In this section we illustrate the use of other distributions to annotate
+the the Roadmap Epigenomics example data set, namely the 'Poisson',
+'NegativeMultinomial', 'Gaussian' and 'Bernoulli' models.
+The 'Poisson' model is an obvious choice when dealing with count data. However
+since the variance of the Poisson is equal to its mean it might not be an ideal
+choice for modeling Sequencing experiments, which have been shown to be
+overdispersed \cite{anders2010}.
+
+\vspace{0.25cm}
+<<STAN_poisson_emissions, results="hide">>=
+hmm_pois = initHMM(trainRegions, nStates, "Poisson")
+hmm_fitted_pois = fitHMM(trainRegions, hmm_pois, maxIters=10)
+viterbi_pois = getViterbi(hmm_fitted_pois, trainRegions)
+@
+\vspace{0.25cm}
+
+The 'NegativeMultinomial' distribution for genome segmentation with HMMs was
+first proposed in the EpicSeg model \cite{mammana2015}. The Negative Multinomial can be
+understood as a Multinomial distribution, where its overdispersion of is modeled
+by a Negative Binomial distribution. However, this assumes a shared
+overdispersion across data tracks within a state as opposed to the
+'NegativeBinomial' and 'PoissonLogNormal' models which model the variance for
+each state and data track separately. In order to use the 'NegativeMultinomial'
+in \Biocpkg{STAN} an additional data track - the sum of counts - for each bin
+needs to be added to the data. Internally the 'NegativeMultinomial'
+is modeled as a product of a 'NegativeBinomial' and a 'Multinomial' emission
+(see section 'Combining different emission functions' for further details):
+
+\vspace{0.25cm}
+<<STAN_nmn_emissions, results="hide">>=
+simData_nmn = lapply(trainRegions, function(x) cbind(apply(x,1,sum), x))
+hmm_nmn = initHMM(simData_nmn, nStates, "NegativeMultinomial")
+hmm_fitted_nmn = fitHMM(simData_nmn, hmm_nmn, maxIters=10)
+viterbi_nmn = getViterbi(hmm_fitted_nmn, simData_nmn)
+@
+\vspace{0.25cm}
+
+In order to model the data using Gaussian distributions, it needs to be
+log-transformed and smoothed. This approach is implementd in Segway, a method
+used by the ENCODE Consortium for chromatin state annotation \cite{hoffman2012}.
+However, to overcome singularity of the (diagonal) covariance matrix due to the
+zero-inflated distribution of the transformed read counts, it uses a shared
+variance over states for each data track. To use gaussian distributions with
+Sequencing data in \Biocpkg{STAN}, we transform the data (with the hyperbole
+sine function \cite{hoffman2012}) and model it using the emission 'IndependentGaussian' with a shared
+covariance, i.e. \Robject{sharedCov=TRUE}.
+
+\vspace{0.25cm}
+<<STAN_gaussian_emissions, results="hide">>=
+trainRegions_smooth = lapply(trainRegions, function(x) 
+            apply(log(x+sqrt(x^2+1)), 2, runningMean, 2))
+hmm_gauss = initHMM(trainRegions_smooth, nStates, "IndependentGaussian", sharedCov=TRUE)
+hmm_fitted_gauss = fitHMM(trainRegions_smooth, hmm_gauss, maxIters=10)
+viterbi_gauss = getViterbi(hmm_fitted_gauss, trainRegions_smooth)
+@
+\vspace{0.25cm}
+
+Another approach was proposed in ChromHMM, which models binarized data using an
+independent Bernoulli model \cite{ernst2010}. Note, that the performance of the model
+highly depends on the non-trivial choice of a proper cutoff and quantitative
+information is lost. The latter is especially important when
+predicting promoters and enhancers since these elements are both marked H3K4me1
+and H3K4me3, but at different ratios. The function \Rfunction{binarizeData}
+binarizes the data using the default approach by ChromHMM \cite{ernst2010}. The
+model can then be fit by specifying the 'Bernoulli' model. Note however, that
+initialization and model fitting are carried out differently than in the
+ChromHMM implementation. In particular \Biocpkg{STAN} uses the EM algorithm
+while ChromHMM uses online EM. For details on the initialization, please see
+the \Rfunction{initHMM} manual.
+
+\vspace{0.25cm}
+<<STAN_bernoulli_emissions, results="hide">>=
+trainRegions_binary = binarizeData(trainRegions)
+hmm_ber = initHMM(trainRegions_binary, nStates, "Bernoulli")
+hmm_fitted_ber = fitHMM(trainRegions_binary, hmm_ber, maxIters=10)
+viterbi_ber = getViterbi(hmm_fitted_ber, trainRegions_binary)
+@
+\vspace{0.25cm}
+
+We calculate the mean read coverage for each method and segmentation:
+
+\vspace{0.25cm}
+<<STAN_other_emissions_avg_cov, results="hide">>=
+avg_cov_gauss = getAvgSignal(viterbi_gauss, trainRegions)
+avg_cov_nmn = getAvgSignal(viterbi_nmn, trainRegions)
+avg_cov_ber = getAvgSignal(viterbi_ber, trainRegions)
+avg_cov_pois = getAvgSignal(viterbi_pois, trainRegions)
+@
+\vspace{0.25cm}
+
+These are again plotted using the \Rfunction{heatmap.2} function (see Figure \ref{fig:mean_counts_other}). 
+
+\vspace{0.25cm}
+<<STAN_other_emissions_avg_cov_plot, eval=FALSE, results="hide">>=
+heatmap.2(log(avg_cov_gauss+1), margins=c(8,7),srtCol=45, dendrogram="row", Rowv=TRUE, 
+        Colv=FALSE, col=colpal_statemeans, trace="none", notecex=0.7, cexRow=0.75, cexCol=1, 
+        cellnote=round(avg_cov_gauss,1), notecol="black")
+heatmap.2(log(avg_cov_nmn+1), margins=c(8,7),srtCol=45, dendrogram="row", Rowv=TRUE, 
+        Colv=FALSE, col=colpal_statemeans, trace="none", notecex=0.7, cexRow=0.75, cexCol=1, 
+        cellnote=round(avg_cov_nmn,1), notecol="black")
+heatmap.2(log(avg_cov_ber+1), margins=c(8,7),srtCol=45, dendrogram="row", Rowv=TRUE, 
+        Colv=FALSE, col=colpal_statemeans, trace="none", notecex=0.7, cexRow=0.75, cexCol=1, 
+        cellnote=round(avg_cov_ber,1), notecol="black")
+heatmap.2(log(avg_cov_pois+1), margins=c(8,7),srtCol=45, dendrogram="row", Rowv=TRUE, 
+        Colv=FALSE, col=colpal_statemeans, trace="none", notecex=0.7, cexRow=0.75, cexCol=1, 
+        cellnote=round(avg_cov_pois,1), notecol="black")
+@
+\vspace{0.25cm}
+
+
+<<STAN_other_emissions_avg_cov_plot_pdf, echo=FALSE, eval=TRUE, results="hide">>=
+pdf("avg_cov_gauss.pdf")
+heatmap.2(log(avg_cov_gauss+1), margins=c(8,7),srtCol=45, dendrogram="row", Rowv=TRUE, Colv=FALSE, col=colpal_statemeans, trace="none", notecex=0.7, cexRow=0.75, cexCol=1, cellnote=round(avg_cov_gauss,1), notecol="black")
+dev.off()
+pdf("avg_cov_nmn.pdf")
+heatmap.2(log(avg_cov_nmn+1), margins=c(8,7),srtCol=45, dendrogram="row", Rowv=TRUE, Colv=FALSE, col=colpal_statemeans, trace="none", notecex=0.7, cexRow=0.75, cexCol=1, cellnote=round(avg_cov_nmn,1), notecol="black")
+dev.off()
+pdf("avg_cov_ber.pdf")
+heatmap.2(log(avg_cov_ber+1), margins=c(8,7),srtCol=45, dendrogram="row", Rowv=TRUE, Colv=FALSE, col=colpal_statemeans, trace="none", notecex=0.7, cexRow=0.75, cexCol=1, cellnote=round(avg_cov_ber,1), notecol="black")
+dev.off()
+pdf("avg_cov_pois.pdf")
+heatmap.2(log(avg_cov_pois+1), margins=c(8,7),srtCol=45, dendrogram="row", Rowv=TRUE, Colv=FALSE, col=colpal_statemeans, trace="none", notecex=0.7, cexRow=0.75, cexCol=1, cellnote=round(avg_cov_pois,1), notecol="black")
+dev.off()
+@
+
+\begin{figure}[!htp]
+  \centering
+    \subfloat[]{{\includegraphics[width=8cm]{avg_cov_gauss.pdf} }}%
+    \qquad
+    \subfloat[]{{\includegraphics[width=8cm]{avg_cov_nmn.pdf} }}
+    \\% \caption{2 Figures side by side}%
+      \subfloat[]{{\includegraphics[width=8cm]{avg_cov_ber.pdf} }}%
+    \qquad
+    \subfloat[]{{\includegraphics[width=8cm]{avg_cov_pois.pdf} }}
+    \caption{Mean read
+    counts of the (a) 'IndependentGaussian' (b) 'NegativeMultinomial' (c)
+    'Bernoulli' and (d) 'Poisson' state
+    annotation.}
+    \label{fig:mean_counts_other}%
+\end{figure}
+
+
+\section{Integrating strand-specific and non-strand-specific data with STAN}
+\Biocpkg{STAN} also allows for the integration of strand-specific (e.g. RNA) 
+and non-strand-specific data (e.g. ChIP). This is donw using bidirectional
+hidden Markov models (bdHMMs) which were proposed in \cite{zacher2014}. 
 A bdHMM models a directed process using the concept of twin states, where each
-genomic state is split up into a pair of twin states, one for each direction
-(e.g. sense and antisense in context of transcription). Those twin state pairs
-are identical in terms of their emissions (i.e. they model the same genomic
-state) \cite{zacher2014}. \\
-In order to fit a (bd)HMM to the yeast example data, the number of states needs
-to be predefined, which we set to $K=12$  (5 directed twin state pairs and 2
-undirected states, see also section "Initialization of (bd)HMMs"). In
-\Biocpkg{STAN}, these states need to be labeled according to the state directionality. Directed states 1 to 5 are split up into twin
-states F1 to F5 (forward direction) and R1  to R5 (reverse direction).
-Undirected states are labeled as U1 and U2:
-
-
-\vspace{0.25cm}
-<<State labeling yeast, echo=TRUE>>=
-stateLabel = c("F1", "F2", "F3", "F4", "F5", "R1", "R2", "R3", "R4", "R5", "U1", "U2")
-@
-\vspace{0.25cm}
-
-In order to infer model parameters, initial estimates are required for
-
-\begin{itemize}
-  \item the emssion distributions. In this case we choose to model the continuous data with multivariate gaussian
-distributions. Thus initial estimates for the means $\mu_i$ and covariance
-matrices $\Sigma_i$ are needed. ($i \in [1;K]$)
-  \item the state transition probabilities: $a_{ij}=P(s_t=j|s_{t-1}=i)$.  ($i,j
-  \in [1;K]$)
-  \item the initial state probabilities: $P(s_{1}=i)$.  ($i \in [1;K]$)
-\end{itemize}
-
-
-Initial estimates for the multivariate gaussians were computed in advance to ensure reproducibility
-of this vignette. $\Sigma_i$ was set to the covariance of the whole dataset and
-$\mu_i$ was initialized using kmeans clustering (see section "Initialization of
-(bd)HMMsusing" for more details). The function \Rfunction{HMMEmission()} creates
-an instance of the \Rclass{HMMEmission} class:
-
-\vspace{0.25cm}
-<<Initial emissions, echo=TRUE>>=
-nStates = 12
-data(yeastTF_initMeans)
-data(yeastTF_initCovs)
-gaussEmission = HMMEmission(type="Gaussian",
-                            parameters=list(mean=yeastTF_initMeans, cov=yeastTF_initCovs),
-                            nStates=nStates)
-gaussEmission
-@
-\vspace{0.25cm}
-
-Transitions and initial state probabilities are initialized uniform:
-
-\vspace{0.25cm}
-<<Initial transitions, echo=TRUE>>=
-transMat = matrix(1/nStates, nrow=nStates, ncol=nStates)
-initProb = rep(1/nStates, nStates)
-@
-\vspace{0.25cm}
-
-Lastly, the directionality (or strand-specificity) of observations needs to be
-defined. Columns 1 to 10 of the observation matrix contain undirected ChIP
-signal, which is indicated by 0, while the pair of strand-specific (expression)
-observations in column 11 and 12 is indicated by $1$:
-
-\vspace{0.25cm}
-<<Defining the yeast model, echo=TRUE, results="hide">>=
-dirobs = as.integer(c(rep(0,10), 1, 1))
-@
-\vspace{0.25cm}
-
-Note that strand-specific observation tracks must occur as integer pairs in
-\Robject{dirobs}. These pairs are makred by increasing, matching
-integers and thus an additional strand-specific observation pair would be
-indicated by a pair of 2. \\
-Now we initialize a bdHMM object with the \Rfunction{bdHMM()} function, which
-creates a \Rclass{bdHMM} object and call \Rfunction{fitHMM()} to optimize the
-initial parameter set using the EM algorithm.
-
-\vspace{0.25cm}
-<<Fitting the bdHMM to yeast data, echo=TRUE, results="hide">>=
-bdhmm = bdHMM(initProb=initProb, transMat=transMat,
-        emission=gaussEmission, nStates=nStates,
-        status="initial", stateLabel=stateLabel,
-        transitionsOptim="analytical", directedObs=dirobs)
-bdhmm_fitted = fitHMM(yeastTF_databychrom_ex, bdhmm, maxIters=100, verbose=FALSE)
-@
-\vspace{0.25cm}
-
-The result is a list containing the trace of the log-likelihood during model
-fitting and the resulting \Rclass{bdHMM} object. The mean values for all forward
-and undirected states can be extracted from the result and plotted as follows (see
-Figure \ref{fig:means_yeast}):
-
-\vspace{0.25cm}
-<<Plotting fitted in yeast, echo=TRUE, eval=FALSE, results="hide">>=
-means_fitted = do.call("rbind",bdhmm_fitted$hmm@emission@parameters$mean, )[c(1:5, 11:12),]
-library(gplots)
-heat = c("dark green", "dark green", "dark green", "gold", "orange", "red")
-colfct = colorRampPalette(heat)
-colpal = colfct(200)
-colnames(means_fitted) = colnames(yeastTF_databychrom_ex[[1]])
-rownames(means_fitted) = c(paste("F", 1:5, sep=""), paste("U", 1:2, sep=""))
-heatmap.2(means_fitted, col=colpal, trace="none", cexCol=0.9, cexRow=0.9,
-          cellnote=round(means_fitted,1), notecol="black", dendrogram="row", 
-          Rowv=TRUE, Colv=FALSE, notecex=0.9)
-@
-\vspace{0.25cm}
-
-
-<<Plotting the means, echo=FALSE, results="hide">>=
-library(gplots)
-pdf("means.pdf")
-means_fitted = do.call("rbind",bdhmm_fitted$hmm@emission@parameters$mean, )[c(1:5, 11:12),]
-library(gplots)
-heat = c("dark green", "dark green", "dark green", "gold", "orange", "red")
-colfct = colorRampPalette(heat)
-colpal = colfct(200)
-colnames(means_fitted) = colnames(yeastTF_databychrom_ex[[1]])
-rownames(means_fitted) = c(paste("F", 1:5, sep=""), paste("U", 1:2, sep=""))
-heatmap.2(means_fitted, col=colpal, trace="none", cexCol=0.9, cexRow=0.9,
-          cellnote=round(means_fitted,1), notecol="black", dendrogram="row", 
-          Rowv=TRUE, Colv=FALSE, notecex=0.9)
-dev.off()
-@
-
-\begin{figure}
-\centering
-\includegraphics[width=10cm]{means.pdf}
-\caption{Mean signal of forward and undirected genomic states. U2 is an
-intergenic state with low signal for all data tracks except the 
-Nucleosomes. Promoter state U1 shows a characteristic depletion of Nucleosomes
-and enrichment of TFIIB and (serine 5 phosphorylated) PolII (Rpb3). Directed
-genomic states F1, F2 and F3 model transcription of highly expressed genes,
-while F4 and F5 transcription of lowly expressed genes.}
-\label{fig:means_yeast}
-\end{figure}
-
-
-Based on the distribution of state means, one can already derive a
-thorough description of state properties (see Figure \ref{fig:means_yeast}). The
-optimized model can now be used to infer a directed genomic state
-annotation.
-This can be done in two ways using \Biocpkg{STAN}. \Rfunction{getPosterior()} calculates the posterior
-probability of each state at each genomic position and therefore provides
-soft assignments for the most likely state path (note that a hard assignment
-can easily be derived by choosing at each position the state with maximal
-posterior probability
-$s_t=argmax_i[Pr(s_t=i|\mathcal{O}, \theta)]$ for all $t$, where $\mathcal{S}=(s_1, s_2,
-..., s_T)$, is the state path, $\mathcal{O}=(o_1, o_2,
-..., o_T)$ the observation sequence and $\theta$ the model parameters). Another
-way is to find an $\mathcal{S}$, which maximizes $Pr(\mathcal{S},
-\mathcal{O}|\theta)$, which is also known as the
-Viterbi path. This is made available by the \Biocpkg{STAN} function
-\Rfunction{getViteri()}:
-
-\vspace{0.25cm}
-<<Calculating viterbi path in yeast, echo=TRUE, results="hide">>=
-yeastTF_viterbi = getViterbi(bdhmm_fitted$hmm, yeastTF_databychrom_ex)
-str(yeastTF_viterbi)
-@
-\vspace{0.25cm}
-
-
-For visualization of the Viterbi path, together with the data, we can use the
-\Biocpkg{Gviz} package, an R-based Genome Browser (for more detailson plotting
-genomic data, please check the \Biocpkg{Gviz} manual or vignette).
-First, we retrieve the genomic annotation at the region of interest.
-
-\vspace{0.25cm}
-<<Retrieving UCSC genome annotation, echo=TRUE, eval=FALSE, results="hide">>=
-library(Gviz)
-chr = "chrIV"
-gen = "sacCer3"
-gtrack <- GenomeAxisTrack()
-yeastTF_SGDGenes <- UcscTrack(genome = gen, chromosome = chr,
-        track = "SGD Gene", from=1217060, to=1225000, trackType = "GeneRegionTrack",
-        rstarts = "exonStarts", rends = "exonEnds", gene = "name",
-        symbol = "name", transcript = "name", strand = "strand",
-        fill = "blue", name = "SGD Genes", col="black")
-@
-\vspace{0.25cm}
-
-Next, we need to convert our data tracks to \Rclass{AnnotationTrack} objects,
-which store the data together with parameters for plotting:
-
-\vspace{0.25cm}
-<<Creating yeast Gviz data tracks, echo=TRUE, eval=FALSE, results="hide">>=
-faccols = hcl(h = seq(15, 375 - 360/dim(yeastTF_databychrom_ex$chr04)[2], 
-              length = dim(yeastTF_databychrom_ex$chr04)[2])%%360, c = 100, l = 65)
-names(faccols) = colnames(yeastTF_databychrom_ex$chr04)
-
-dlist=list()
-for(n in colnames(yeastTF_databychrom_ex$chr04)) {
-    dlist[[n]] = DataTrack(data = yeastTF_databychrom_ex$chr04[,n], 
-                 start = yeastTF_probeAnno_ex$chr04, 
-                 end = yeastTF_probeAnno_ex$chr04+8, 
-                 chromosome = "chrIV", genome=gen,
-                 name = n, type="h", col=faccols[n])
-}
-@
-\vspace{0.25cm}
-
-The genomic state annotation is then converted to an \Rclass{AnnotationTrack}
-object by the use of the \Rfunction{Rle()} and \Rfunction{GRanges()} function: 
-
-\vspace{0.25cm}
-<<Creating yeast Gviz viterbi tracks, echo=TRUE, eval=FALSE, results="hide">>=
-library(GenomicRanges)
-library(IRanges)
-myViterbiDirs = list(F=c("F1", "F2", "F3", "F4", "F5"), U=c("U1", "U2"), 
-                     R=c("R1", "R2", "R3", "R4", "R5"))
-myViterbiPanels = list()
-cols = rainbow(7)
-cols = cols[c(1:5,1:5,6:7)]
-names(cols) = stateLabel
- 
-for(dir in c("F", "U", "R")) {
-    myPos = yeastTF_probeAnno_ex$chr04 >= 1217060 & yeastTF_probeAnno_ex$chr04 <= 1225000
-    myRle = Rle(yeastTF_viterbi$chr04[myPos])
-    currItems = which(myRle@values %in% myViterbiDirs[[dir]])
- 
-    start = yeastTF_probeAnno_ex$chr04[myPos][start(myRle)][currItems]
-    width = myRle@lengths[currItems]
-    ids = as.character(myRle@values[currItems])
-    values = as.character(myRle@values[currItems])
- 
-    myViterbiPanels[[dir]] = AnnotationTrack(range=GRanges(seqnames=rep("chrIV", 
-        length(currItems)), ranges=IRanges(start=start, width=width*8, names=values)),
-        genome=gen, chromosome=chr, name=paste("Viterbi\n", "(", dir, ")", sep=""), 
-        id=ids[order(start)], shape="box",fill=cols[values[order(start)]], col="black", 
-        stacking="dense")
-}
-@
-\vspace{0.25cm}
-
-Finally, relative track sizes are assigned and the region of interest is plotted
-using \Rfunction{plotTracks()} (see Figure \ref{fig:yeast_results}):
-
-\vspace{0.25cm}
-<<Gviz plot  yeast, echo=TRUE, eval=FALSE, results="hide">>=
-sizes = rep(1,17)
-sizes[14] = 2
-sizes[15:17] = 0.7
-sizes[1] = 1.3
-plotTracks(c(list(gtrack), dlist, list(yeastTF_SGDGenes), myViterbiPanels), 
-           from=1217060, to=1225000, sizes=sizes, showFeatureId=TRUE, featureAnnotation="id", 
-           fontcolor.feature="black", cex.feature=0.7, background.title="darkgrey", showId=TRUE)
-@
-\vspace{0.25cm}
-
-
-
-
-
-\vspace{0.25cm}
-<<Plotting the result2, echo=FALSE, results="hide">>=
-#library(colorspace)
-pdf("yeast_ex.pdf", width=7*1.2, height=7*1.5)
-library(Gviz)
-chr = "chrIV"
-gen = "sacCer3"
-gtrack <- GenomeAxisTrack()
-data(yeastTF_SGDGenes)
-
-
-faccols = hcl(h = seq(15, 375 - 360/dim(yeastTF_databychrom_ex$chr04)[2], 
-				length = dim(yeastTF_databychrom_ex$chr04)[2])%%360, c = 100, l = 65)
-names(faccols) = colnames(yeastTF_databychrom_ex$chr04)
-
-dlist=list()
-for(n in colnames(yeastTF_databychrom_ex$chr04)) {
-	dlist[[n]] = DataTrack(data = yeastTF_databychrom_ex$chr04[,n], 
-			start = yeastTF_probeAnno_ex$chr04, 
-			end = yeastTF_probeAnno_ex$chr04+8, 
-			chromosome = "chrIV", genome=gen,
-			name = n, type="h", col=faccols[n])
-}
-
-library(GenomicRanges)
-library(IRanges)
-myViterbiDirs = list(F=c("F1", "F2", "F3", "F4", "F5"), U=c("U1", "U2"), 
-		R=c("R1", "R2", "R3", "R4", "R5"))
-myViterbiPanels = list()
-cols = rainbow(7)
-cols = cols[c(1:5,1:5,6:7)]
-names(cols) = stateLabel
-
-for(dir in c("F", "U", "R")) {
-	myPos = yeastTF_probeAnno_ex$chr04 >= 1217060 & yeastTF_probeAnno_ex$chr04 <= 1225000
-	myRle = Rle(yeastTF_viterbi$chr04[myPos])
-	currItems = which(myRle@values %in% myViterbiDirs[[dir]])
-	
-	start = yeastTF_probeAnno_ex$chr04[myPos][start(myRle)][currItems]
-	width = myRle@lengths[currItems]
-	ids = as.character(myRle@values[currItems])
-	values = as.character(myRle@values[currItems])
-	
-	myViterbiPanels[[dir]] = AnnotationTrack(range=GRanges(seqnames=rep("chrIV", 
-							length(currItems)), ranges=IRanges(start=start, width=width*8, names=values)),
-			genome=gen, chromosome=chr, name=paste("Viterbi\n", "(", dir, ")", sep=""), 
-			id=ids[order(start)], shape="box",fill=cols[values[order(start)]], col="black", 
-			stacking="dense")
-}
-
-sizes = rep(1,17)
-sizes[14] = 2
-sizes[15:17] = 0.7
-sizes[1] = 1.3
-plotTracks(c(list(gtrack), dlist, list(yeastTF_SGDGenes), myViterbiPanels), 
-		from=1217060, to=1225000, sizes=sizes, showFeatureId=TRUE, featureAnnotation="id", 
-		fontcolor.feature="black", cex.feature=0.7, background.title="darkgrey", showId=TRUE)
-
-dev.off()
-@
-\vspace{0.25cm}
-
-
-\begin{figure}
-\centering
-\includegraphics[width=13cm]{yeast_ex.pdf}
-\caption{The example data is shown with directed genomic state annotation
-and SGD genes. The bdHMM state annotation properly
-recovers transcript structure and directionality. States occur at characteristic
-positions relative to transcription start and termination sites, i.e. refeltcing
-the different phases of the transcription cycle.}
-\label{fig:yeast_results}
-\end{figure}
-
-\section{Inferring directed genomic states from non-strand-specific data only}
-This section demonstrates inference of directed states using \Biocpkg{STAN}
-on ChIP-Sequencing data, where no strand-specific data is available. Moreover,
-in this scenario we do not decide a priori, which states are modeled as directed
-and which as undirected.
-Instead all states are initially directed and a score based on the posterior
-state distributions is then applied after the model fitting to decide if a
-state is directed or not.
+genomic state is split up into a pair of twin states, one for  each 
+direction (e.g. sense and antisense in context of transcription). Those 
+twin state  pairs  are identical in terms of their emissions (i.e. they model
+the same genomic state). Currently the following models are available for
+bdHMMs: 'IndependentGaussian', 'Gaussian', 'NegativeBinomial',
+'ZINegativeBinomial' and 'PoissonLogNormal'. We now illustrate the use of bdHMMs
+in \Biocpkg{STAN}  at an example data set of yeast transcription factors
+measured by ChIP-chip and RNA expression measured with a tiling array
+which was used to model the transcription cycle as a sequence of 'transcription
+states' in \cite{zacher2014}.
 \\
-As an example we use human chromatin modification data from \cite{ernst2010}. The data
-consists of 13 signal tracks, which we model using 4 directed
-twin state pairs (i.e. overall 8 states, see also Figure \ref{fig:human_results}):
+The \Rfunction{initBdHMM} function is used to initialize a bdHMM with 6 twin
+states. Note that the overall number of states in the bdHMM is 12 (6 identical
+twin state pairs). \Robject{dirobs} defines the directionality (or
+strand-specificity) of the data tracks. In \Robject{dirobs}, the first 10 data
+tracks are non-strand-specific ChIP-chip measurments, indicated by '0' and data track 11
+and 12 are strand-specific RNA expression measurements, indicated by '1'.
+Note that strand-specific data tracks must be labeled as increasing pairs of
+integers. Thus and additional strand-specific data track pair would be labeled
+as a pair of '2'. Model fitting and calculation of the state annotation are
+carried out as for standard HMMs:
 
 \vspace{0.25cm}
-<<Loading human data, echo=TRUE, results="hide">>=
-data(humanCD4T_signal_ex)
-data(humanCD4T_probeAnno_ex)
-nStates = 8
-stateLabel = c("F1", "F2", "F3", "F4", "R1", "R2", "R3", "R4")
+<<bdHMM_yeast_fit, results="hide">>=
+data(yeastTF_databychrom_ex)
+nStates = 6
+dirobs = as.integer(c(rep(0,10), 1, 1))
+bdhmm_gauss = initBdHMM(yeastTF_databychrom_ex, nStates, "Gaussian", directedObs=dirobs)
+bdhmm_fitted_gauss = fitHMM(yeastTF_databychrom_ex, bdhmm_gauss)
+viterbi_bdhmm_gauss = getViterbi(bdhmm_fitted_gauss, yeastTF_databychrom_ex)
 @
 \vspace{0.25cm}
 
-When no strand-specific data is available, the directionality needs to be
-indicated by the flags sequence. This sequence marks positions which are known
-to be either a specific direction or undirected (e.g. at known genes).
-\Robject{flagsCD4T\_ex} stores these sequences as character vectors (one for
-each observation sequence), where "F" stands for forward direction or
-undirected, "R" for reverse direction or undirected and "U" for any of the three:
+We plot the means of the multivariate gaussian distrbutions for each state
+(see Figure \ref{fig:means_yeast}):
 
 \vspace{0.25cm}
-<<Showing the flag sequence, echo=TRUE>>=
-data(humanCD4T_flags_ex)
-humanCD4T_flags_ex$chr7[600:650]
+<<bdHMM_yeast_params_plot, eval=FALSE, results="hide">>=
+statecols_yeast = rep(rainbow(nStates), 2)
+names(statecols_yeast) = StateNames(bdhmm_fitted_gauss)
+means_fitted = EmissionParams(bdhmm_fitted_gauss)$mu
+heatmap.2(means_fitted, col=colpal_statemeans, 
+        RowSideColors=statecols_yeast[rownames(means_fitted)], 
+        trace="none", cexCol=0.9, cexRow=0.9,
+        cellnote=round(means_fitted,1), notecol="black", dendrogram="row",
+        Rowv=TRUE, Colv=FALSE, notecex=0.9)
 @
 \vspace{0.25cm}
-
-In this example the flag sequence initializes directionality at a region covered
-by one annotated gene (in reverse direction, see also Figure \ref{fig:human_results}). Gaussian means
-are again initialized using k-means clustering, covariances are set to the covariance of the whole data set and initial and
-transition probabilities are initialized uniform. We build a \Rclass{bdHMM}
-object and optimize parameters:
-
-\vspace{0.25cm}
-<<Fitting the bdHMM to the human CD4T cell data, echo=TRUE, results="hide">>=
-data(humanCD4T_initMeans)
-data(humanCD4T_initCovs)
-gaussEmission = HMMEmission(type="Gaussian",
-		parameters=list(mean=humanCD4T_initMeans, cov=humanCD4T_initCovs),
-		nStates=nStates)
-transMat = matrix(1/nStates, nrow=nStates, ncol=nStates)
-initProb = rep(1/nStates, nStates)
-dirobs = as.integer(rep(0,13))
-bdhmm = bdHMM(initProb=initProb, transMat=transMat,
-		emission=gaussEmission, nStates=nStates,
-		status="initial", stateLabel=stateLabel,
-		transitionsOptim="analytical", directedObs=dirobs)
-mybdHMM_CD4T = fitHMM(humanCD4T_signal_ex, bdhmm, maxIters=1000, dirFlags=humanCD4T_flags_ex)
-@
-\vspace{0.25cm}
-
-Having fitted the bdHMM, we want to decide which twin states are directed and
-which are undirected. This can be done using a score based on the posterior
-probailities of each state pair \cite{zacher2014}. The score will be low if the
-differences in the probability for observing the forward twin state and the
-probability for observing the respective reverse twin state is low. It will be
-high if this differences is large and thus the directionality of twin states is
-well distinguishable. \\
-We calculate the posterior state distributions using \Rfunction{getPosterior()}
-and derive a directionality score for each twin state pair, which is plotted in
-Figure \ref{fig:human_dir_score}:
-
-\vspace{0.25cm}
-<<Defining state directionality, echo=TRUE, results="hide", eval=FALSE>>=
-posterior_bdhmm = getPosterior(mybdHMM_CD4T$hmm, obs=humanCD4T_signal_ex)
-
-myTwins = 5:8
-score = rep(0,4)
-for(i in 1:(nStates/2)) {
-    numer = sum(abs(posterior_bdhmm$chr7[,i]-posterior_bdhmm$chr7[,myTwins[i]]))
-    denom = sum((posterior_bdhmm$chr7[,i]+posterior_bdhmm$chr7[,myTwins[i]]))
-    score[i] = numer/denom
-}
-
-names(score) = c("F1/R1", "F2/R2", "F3/R3", "F4/R4")
-barplot(score, col=rainbow(4), cex.names=0.8, ylim=c(0,1))
-abline(h=0.5, lty=3)
-@
-\vspace{0.25cm}
-
-As rule of thumb we use $0.5$ as cutoff for state directionality. In
-our example, states F1/R1 and F2/R2 are directed, while states F3/R3 and F4/R4 are
-undirected. 
 
 \begin{figure}[!htp]
-\centering
-\includegraphics[width=10cm]{dir_score_human.pdf}
-\caption{Directionality score of four bdHMM states fitted to human CD4 T-cell
-chromatin data. According to a cutoff of 0.5, state F1 and F2 are directed.
-State F3 and F4 are undirected.}
-\label{fig:human_dir_score}
+  \centering
+    \includegraphics[width=10cm]{yeast_means_gauss.pdf}
+    \caption{Mean signal 6 bdHMM twin state pairs. 'F' and 'R'
+    indicate forward and reverse direction of state pairs.}%
+    \label{fig:means_yeast}%
 \end{figure}
 
 
-Next, the state annotation is inferred using \Rfunction{getViterbi()}. One could also
-calculate a reduced model using two directed twin state pairs and two undirected
-states, but for the sake of simplicity of this vignette, we simply collapse states F3/R3 and F4/R4
-into U1 and U2 in the state annotation:
-
-
-\vspace{0.25cm}
-<<Calculating the viterbi path, echo=TRUE, results="hide">>=
-humanCD4T_viterbi = getViterbi(mybdHMM_CD4T$hmm, humanCD4T_signal_ex)
-stateLabel2 = c("F1", "F2", "U1", "U2", "R1", "R2", "U1", "U2")
-humanCD4T_viterbi_collapsed = lapply(humanCD4T_viterbi, 
-                              function(chrom) factor(stateLabel2[chrom]))
+<<bdHMM_yeast_params_plot_pdf, echo=FALSE, eval=TRUE, results="hide">>=
+pdf("yeast_means_gauss.pdf")
+statecols_yeast = rep(rainbow(nStates), 2)
+names(statecols_yeast) = StateNames(bdhmm_fitted_gauss)
+means_fitted = EmissionParams(bdhmm_fitted_gauss)$mu
+heatmap.2(means_fitted, col=colpal_statemeans, RowSideColors=statecols_yeast[rownames(means_fitted)], trace="none", cexCol=0.9, cexRow=0.9,
+        cellnote=round(means_fitted,1), notecol="black", dendrogram="row",
+        Rowv=TRUE, Colv=FALSE, notecex=0.9)
+dev.off()
 @
 \vspace{0.25cm}
 
-Plotting the results (see previous section for more details) revelas that
-directed state F1/R1 associates with the 5' end of genes, while state F2/R2
-associates with the 3' end of genes (Figure \ref{fig:human_results}). State U1,
-which has some directionality, but still below the cutoff is located
-upstream of genes, while state U2 (with a directionality score of $0$)
-models intergenic, unbound regions.
+We convert the viterbi path into a \Robject{GRanges} object. Note that the
+directionaliy of bdHMM states is indicated by 'F' (forward) and 'R' (reverse).
 
 \vspace{0.25cm}
-<<Plotting data and viterbi state path 1, echo=TRUE, results="hide", eval=FALSE>>=
-library(Gviz)
-data(humanCD4T_ucscGenes)
-chr = "chr7"
-gen = "hg18"
+<<bdHMM_convert_GRanges>>=
+yeastGRanges = GRanges(IRanges(start=1214616, end=1225008), seqnames="chrIV")
+names(viterbi_bdhmm_gauss) = "chrIV"
+viterbi_bdhmm_gauss_gr = viterbi2GRanges(viterbi_bdhmm_gauss, yeastGRanges, 8)
+viterbi_bdhmm_gauss_gr
+@
+\vspace{0.25cm}
+
+Next, we visualize the data, state annotation and together with SGD genes using
+\Biocpkg{Gviz} (see Figure \ref{fig:gviz_yeast}):
+
+\vspace{0.25cm}
+<<bdHMM_gviz_plot, eval=FALSE, results="hide">>=
+chr = "chrIV"
+gen = "sacCer3"
 gtrack <- GenomeAxisTrack()
-humanCD4T_ideogramChr7 <- IdeogramTrack(genome = gen, chromosome = chr)
 
-faccols = c("#FB9EB1", "#FB9EB1", "#FB9EB1", "#FB9EB1", "#FB9EB1", "#DAB36A", "#DAB36A",
-            "#DAB36A", "#7FBFF5", "#7FBFF5", "#7FBFF5", "#7FBFF5", "#7FBFF5")
-names(faccols) = colnames(humanCD4T_signal_ex$chr7)
-dlist=list()
-for(n in colnames(humanCD4T_signal_ex$chr7)) {
-    dlist[[n]] = DataTrack(data=humanCD4T_signal_ex$chr7[,n], start=humanCD4T_probeAnno_ex$chr7, 
-                 end = humanCD4T_probeAnno_ex$chr7+200, chromosome="chr7", genome=gen, name=n, 
-                 type="h", col=faccols[n])
-}
+from=1217060
+to=1225000
+forward_segments = grep("F", viterbi_bdhmm_gauss_gr$name)
+reverse_segments = grep("R", viterbi_bdhmm_gauss_gr$name)
+gvizViterbi_yeast = viterbi2Gviz(viterbi_bdhmm_gauss_gr[forward_segments], 
+        "chrIV", "sacCer3", from, to, statecols_yeast)
+gvizViterbi_yeast2 = viterbi2Gviz(viterbi_bdhmm_gauss_gr[reverse_segments], 
+        "chrIV", "sacCer3", from, to, statecols_yeast)
 
-myViterbiDirs = list(F=c("F1", "F2"), U=c("U1", "U2"), R=c("R1", "R2"))
-myViterbiPanels = list()
-cols = rainbow(4)
-cols = cols[c(1:2,1:2,3:4)]
+gvizData_yeast = data2Gviz(yeastTF_databychrom_ex, yeastGRanges, 8, "sacCer3", col="black")
+gaxis = GenomeAxisTrack()
+data(yeastTF_SGDGenes)
+mySize = c(1,rep(1,12), 0.5,0.5,3)
 
-for(dir in c("F", "U", "R")) {
-    myRle = Rle(humanCD4T_viterbi_collapsed$chr7)
-    currItems = which(myRle@values %in% myViterbiDirs[[dir]])
-	
-    start = humanCD4T_probeAnno_ex$chr7[start(myRle)][currItems]
-    width = myRle@lengths[currItems]
-    ids = myRle@values[currItems]
-    values = myRle@values[currItems]
-    currGRange = GRanges(seqnames=rep("chr7", length(currItems)),ranges=IRanges(start=start, 
-                         width=width*200, names=values[currItems]))
-	
-    myViterbiPanels[[dir]] = AnnotationTrack(range=currGRange, genome="hg18", chromosome="chr7", 
-                   name=paste("Viterbi\n", "(", dir, ")", sep=""), id=ids[order(start)],  
-                   shape="box",fill=cols[values[order(start)]], col="black", stacking="dense")
-}
-
-flagpos = humanCD4T_probeAnno_ex$chr7[range(which(humanCD4T_flags_ex$chr7 == "R"))]
-flagpanel = list(AnnotationTrack(start=flagpos[1], end=flagpos[2], feature="flags",
-                id="flags-1", strand="-", chromosome="chr7", genome="hg18",
-                stacking="squish", name="flags", fill="coral", col="black", shape="arrow"))
-
-
-sizes = rep(1,20)
-sizes[16] = 2
-sizes[17:20] = 0.7
-sizes[1] = 0.5
-plotTracks(c(list(humanCD4T_ideogramChr7), list(gtrack), dlist, list(humanCD4T_ucscGenes), 
-                  flagpanel, myViterbiPanels), from=134600000, to=135350000, sizes=sizes,  
-                  showFeatureId=TRUE, featureAnnotation="id", fontcolor.feature="black",  
-                  cex.feature=0.7, background.title="darkgrey")
+plotTracks(c(list(gaxis), gvizData_yeast,gvizViterbi_yeast,gvizViterbi_yeast2,
+        list(yeastTF_SGDGenes)), cex.feature=0.7, background.title="darkgrey", lwd=2, 
+        sizes=mySize, from=from, to=to, showFeatureId=FALSE, featureAnnotation="id",
+        fontcolor.feature="black", cex.feature=0.7, background.title="darkgrey", 
+        showId=TRUE)
 @
 \vspace{0.25cm}
 
+
+
+\vspace{0.25cm}
+<<bdHMM_gviz_plot_pdf, echo=FALSE, eval=TRUE, results="hide">>=
+yeastGRanges = GRanges(IRanges(start=1214616, end=1225008), seqnames="chrIV")
+names(viterbi_bdhmm_gauss) = "chrIV"
+viterbi_bdhmm_gauss_gr = viterbi2GRanges(viterbi_bdhmm_gauss, yeastGRanges, 8)
+chr = "chrIV"
+gen = "sacCer3"
+gtrack <- GenomeAxisTrack()
+from=1217060
+to=1225000
+forward_segments = grep("F", viterbi_bdhmm_gauss_gr$name)
+reverse_segments = grep("R", viterbi_bdhmm_gauss_gr$name)
+gvizViterbi_yeast = viterbi2Gviz(viterbi_bdhmm_gauss_gr[forward_segments], "chrIV", "sacCer3", from, to, statecols_yeast)
+gvizViterbi_yeast2 = viterbi2Gviz(viterbi_bdhmm_gauss_gr[reverse_segments], "chrIV", "sacCer3", from, to, statecols_yeast)
+gvizData_yeast = data2Gviz(yeastTF_databychrom_ex, yeastGRanges, 8, "sacCer3", col="black")
+gaxis = GenomeAxisTrack()
+data(yeastTF_SGDGenes)
+mySize = c(1,rep(1,12), 0.5,0.5,3)
+pdf("gviz_example_yeast.pdf", width=7*1.5)
+plotTracks(c(list(gaxis), gvizData_yeast,gvizViterbi_yeast,gvizViterbi_yeast2,list(yeastTF_SGDGenes)),
+        cex.feature=0.7, background.title="darkgrey", lwd=2, sizes=mySize, from=from, to=to, 
+        showFeatureId=FALSE, featureAnnotation="id",
+        fontcolor.feature="black", cex.feature=0.7, background.title="darkgrey", showId=TRUE)#, stacking="dense")#, ylim=c(0,100))
+dev.off()
+@
+\vspace{0.25cm}
 
 
 \begin{figure}[!htp]
-\centering
-\includegraphics[width=13cm]{human_results.pdf}
-\caption{Chromatin modification data, viterbi path and RefSeq gene annotation
-are shown. Covarage tracks are shown shown for Histone acetylations (blue),
-methylations (red), PolII, CTCF and H2AZ (brown). The viterbi path was
-calculated with the 8 state bdHMM, where state F1/R1 and F4/R4 were collapsed
-into undirected states U1 and U2. Directionality of transcripts is recovered at
-all four transcribed loci, although only one gene is used for initialization of
-directionality.}
-\label{fig:human_results}
+  \centering
+    \includegraphics[width=18cm]{gviz_example_yeast.pdf}
+    \caption{Genome Browser showing the 12 data tracks used for model
+    learning together with the segmentations and known SGD gene annotations.}%
+    \label{fig:gviz_yeast}%
 \end{figure}
 
+%\subsection*{Collapsing two directed twin states into one undirected states}
+%There are two states in the yeast bdHMM that seem to have low directional
+%information, since they frequently switch between forward and reverse direction
+%(Figure \ref{fig:gviz_yeast}): The promoter and low signal state. It is
+% possible to collapse these twin states into one undirected state and ...
 
-<<Real plotting, echo=FALSE, results="hide", eval=TRUE>>=
-posterior_bdhmm = getPosterior(mybdHMM_CD4T$hmm, obs=humanCD4T_signal_ex)
+%\section{Combining different emission functions}
+%TODO
 
-myTwins = 5:8
-score = rep(0,4)
-for(i in 1:(nStates/2)) {
-	numer = sum(abs(posterior_bdhmm$chr7[,i]-posterior_bdhmm$chr7[,myTwins[i]]))
-	denom = sum((posterior_bdhmm$chr7[,i]+posterior_bdhmm$chr7[,myTwins[i]]))
-	score[i] = numer/denom
-}
-
-names(score) = c("F1/R1", "F2/R2", "F3/R3", "F4/R4")
-pdf("dir_score_human.pdf")
-barplot(score, col=rainbow(4), cex.names=0.8, ylim=c(0,1))
-abline(h=0.5, lty=3)
-dev.off()
-
-
-pdf("human_results.pdf", width=7*1.2, height=7*1.5)
-
-library(Gviz)
-data(humanCD4T_ucscGenes)
-chr = "chr7"
-gen = "hg18"
-gtrack <- GenomeAxisTrack()
-humanCD4T_ideogramChr7 <- IdeogramTrack(genome = gen, chromosome = chr)
-
-faccols = c("#FB9EB1", "#FB9EB1", "#FB9EB1", "#FB9EB1", "#FB9EB1", "#DAB36A", "#DAB36A",
-		"#DAB36A", "#7FBFF5", "#7FBFF5", "#7FBFF5", "#7FBFF5", "#7FBFF5")
-names(faccols) = colnames(humanCD4T_signal_ex$chr7)
-dlist=list()
-for(n in colnames(humanCD4T_signal_ex$chr7)) {
-	dlist[[n]] = DataTrack(data=humanCD4T_signal_ex$chr7[,n], start=humanCD4T_probeAnno_ex$chr7, 
-			end = humanCD4T_probeAnno_ex$chr7+200, chromosome="chr7", genome=gen, name=n, 
-			type="h", col=faccols[n])
-}
-
-myViterbiDirs = list(F=c("F1", "F2"), U=c("U1", "U2"), R=c("R1", "R2"))
-myViterbiPanels = list()
-cols = rainbow(4)
-cols = cols[c(1:2,1:2,3:4)]
-
-for(dir in c("F", "U", "R")) {
-	myRle = Rle(humanCD4T_viterbi_collapsed$chr7)
-	currItems = which(myRle@values %in% myViterbiDirs[[dir]])
-	
-	start = humanCD4T_probeAnno_ex$chr7[start(myRle)][currItems]
-	width = myRle@lengths[currItems]
-	ids = myRle@values[currItems]
-	values = myRle@values[currItems]
-	currGRange = GRanges(seqnames=rep("chr7", length(currItems)),ranges=IRanges(start=start, 
-					width=width*200, names=values[currItems]))
-	
-	myViterbiPanels[[dir]] = AnnotationTrack(range=currGRange, genome="hg18", chromosome="chr7", 
-			name=paste("Viterbi\n", "(", dir, ")", sep=""), id=ids[order(start)],  
-			shape="box",fill=cols[values[order(start)]], col="black", stacking="dense")
-}
-
-flagpos = humanCD4T_probeAnno_ex$chr7[range(which(humanCD4T_flags_ex$chr7 == "R"))]
-flagpanel = list(AnnotationTrack(start=flagpos[1], end=flagpos[2], feature="flags",
-                 id="flags-1", strand="-", chromosome="chr7", genome="hg18",
-                 stacking="squish", name="flags", fill="coral", col="black", shape="arrow"))
-
-
-sizes = rep(1,20)
-sizes[16] = 2
-sizes[17:20] = 0.7
-sizes[1] = 0.5
-plotTracks(c(list(humanCD4T_ideogramChr7), list(gtrack), dlist, list(humanCD4T_ucscGenes), 
-           flagpanel, myViterbiPanels), from=134600000, to=135350000, sizes=sizes,  
-           showFeatureId=TRUE, featureAnnotation="id", fontcolor.feature="black",  
-		   cex.feature=0.7, background.title="darkgrey")
-dev.off()
-@
-
-\section{Initialization of (bd)HMMs}
-The EM algorithm needs an initial estimate of the model parameters. This
-of crucial importance, since the EM algorithm does not find the global maximum
-of the likelihood, but may converge to a local optimum. In the following we want
-to give a short example for initialization of (bdHMMs) applied to the yeast data
-set of this vignette. In case of continuous data, k-means clustering is an easy
-and practical way to define initial estimates for the means of multivariate
-gaussian distributions. This partitions the observations into k pre-defined
-clusters in which each observation belongs to the cluster with the nearest mean by
-minimizing a cost function which is in our case based on euclidian distance. \\
-K-means clustering is available in R through the \Rfunction{kmeans()} function.
-We summarize our data into a matrix and create two non-strand-specific
-expression tracks, where one track contains the maximum value of expression and
-the other the minumum value of expresssion at each position. This enables
-clustering the data without partinioning it by the strand-specificity of
-expression: 
-
-
-<<kmeans, echo=TRUE, eval=TRUE>>=
-nStates = 7
-myMat = do.call("rbind", yeastTF_databychrom_ex)
-myMat = myMat[apply(myMat, 1, function(x) all(! is.na(x))),]
-myMat[, c("YPDexprW", "YPDexprC")] = t(apply(myMat[, c("YPDexprW", "YPDexprC")], 1,
-                                             sort, decreasing=TRUE))
-km = kmeans(myMat, centers=nStates, iter.max=1000, nstart=100)$centers
-km[order(km[,"YPDexprW"], decreasing=TRUE),]
-@
-
-Based on the expression value, we can decide a priori which states
-are directed or undirected, i.e. clusters with high (max) expression would be
-directed and clusters with low (max) expression would be undirected.\\
-The cluster means are then used as initial estimates for the means of the
-multivariate gaussian emissions. The initial covariances can be set to the
-covariance of the whole data and transitions and initial state probabilities may
-be initialized uniform. This should give the EM algorithm a good estimate of the
-state means and provide enough flexibitlity (through the broad covariance and
-uniform probabilites) to find good parameter estimates.\\
-Please note that this is just an example and that there are many more ways to
-properly initialize an HMM. Another way is for instance to use multiple runs of
-random initialization and use the model with the highest likelihood. Moreover, the initialization procedure of course also depends on the type of data, i.e. a continuous model should be initialized
-differently than a discrete model.
 
 \section{Concluding Remarks}
 This vignette was generated using the following package versions:
@@ -760,6 +670,8 @@ This vignette was generated using the following package versions:
 <<sessInfo, results="asis", echo=FALSE>>=
 toLatex(sessionInfo())
 @
+
+\newpage
 
 \bibliography{refs}
 

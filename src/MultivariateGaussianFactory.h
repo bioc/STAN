@@ -9,19 +9,19 @@
 
 class MultivariateGaussianFactory : public EmissionFactory
 {
-public:
-    EmissionFunction* createEmissionFunction(ParamContainerEmissions *emissionParams, int parallel)
-    {
-        if(DEBUG_MEMORY)
+    public:
+        EmissionFunction* createEmissionFunction(ParamContainerEmissions *emissionParams, int parallel)
         {
-            printf("factory->create():");
+            if(DEBUG_MEMORY)
+            {
+                printf("factory->create():");
+            }
+            if(parallel == 0)
+            {
+                return new MultivariateGaussian(emissionParams);
+            }
         }
-        if(parallel == 0)
-        {
-            return new MultivariateGaussian(emissionParams);
-        }
-    }
-    MultivariateGaussianFactory() {}
-    ~MultivariateGaussianFactory() { }
+        MultivariateGaussianFactory() {}
+        ~MultivariateGaussianFactory() { }
 };
 #endif

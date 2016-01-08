@@ -57,11 +57,11 @@ void inverseR(double** mat, int N)
         }
     }
 
-    // call solnp from R for optimization
+// call solnp from R for optimization
     SEXP call = PROTECT( lang2( install( "c2invertCOV"), sexpmat ) ) ;
     SEXP res = PROTECT( eval( call, R_GlobalEnv ) ) ;
 
-    // write results into matrix
+// write results into matrix
     for(i=0; i<N; i++)
     {
         for(j=0; j<N; j++)
@@ -78,6 +78,7 @@ void inverseR(double** mat, int N)
 
 void **matrixMult(double **v1, int d11, int d12, double **v2, int d21, int d22, double **result)
 {
+//Rprintf("mat-mult\n");
     if(d12 != d21)
     {
         error("Wrong dimensions for matrix multiplication!\n");
@@ -103,9 +104,9 @@ double matrixDet(double **m, int dim)
     int myNCol = dim;
 
     double  *myAP = new double[myNCol*(myNCol + 1)/2],
-    *myW = new double[myNCol],
-    *myZ = new double[myNCol*myNCol],
-    *myWork = new double[myNCol * 3] ;
+        *myW = new double[myNCol],
+        *myZ = new double[myNCol*myNCol],
+        *myWork = new double[myNCol * 3] ;
     int myInfo,
         myN = (int)(myNCol),
         myldz = (int)(myNCol) ;
@@ -119,6 +120,7 @@ double matrixDet(double **m, int dim)
     if (myInfo != 0)
         error("Non inversible matrix") ;
     double theDet;
+//double &theDet = theDet1;
     theDet = 1.0L ;
     for (register int i = 0 ; i < myNCol ; i++)
     {

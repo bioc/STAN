@@ -12,21 +12,27 @@ using namespace std;
 
 class InitialProbability
 {
-protected:
-    int K;
-    double* updateNumeratorPI;
-    double* pi;
-    
-public:
+    protected:
+        int K;
+        double* updateNumeratorPI;
+        double* pi;                               //!<@brief K-dimensional vector containing initial state probabilities.
+// TODO: also constraints here!
 
-    InitialProbability(double *pi, int K);
-    virtual ~InitialProbability();
+    public:
 
-    double* getInitialProb();
-    void updateSample(double** gamma, int i);
-    void updateSampleCoupled(double** gamma, int i, int* couples, SEXP bidirOptimParams);
-    void update(int nsample, SEXP bidirOptimParams);
-    int getK();
-    void finalize();
+        InitialProbability(double *pi, int K);
+
+/**
+ * Destructor for HMM. Sets previously allocated memory of all class attributes free.
+ *
+ */
+        virtual ~InitialProbability();
+
+        double* getInitialProb();
+        void updateSample(double** gamma, int i);
+        void updateSampleCoupled(double** gamma, int i, int* couples, SEXP bidirOptimParams, int* T, int currN);
+        void update(int nsample, SEXP bidirOptimParams, int* T);
+        int getK();
+        void finalize();
 };
 #endif

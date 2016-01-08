@@ -1,4 +1,4 @@
-
+# 
 #' Internal function that generates constraints for a bidirection transition matrix.
 #' @param state.type  Indicates directinality of states. States can be forward (F1, F2, ..., Fn), reverse (R1, R2, ..., Rn) or undirectional (U1, U2, ..., Um). Number of F and R states must be equal and twin states are indicated by integers in id (e.g. F1 and R1 and twins).
 #' 
@@ -28,8 +28,8 @@ getConstraints = function(state.type) {
     for (i in 1:length(state.type)) {
         for (j in 1:length(state.type)) {
             if (i %in% fow & j %in% fow) {
-                constraints[[length(constraints) + 1]] = list(FF = c(fow[fow == i], 
-                  fow[fow == j]), RR = c(fow2rev[fow[fow == j]], fow2rev[fow[fow == 
+                constraints[[length(constraints) + 1]] = list(FF = c(fow[fow == 
+                  i], fow[fow == j]), RR = c(fow2rev[fow[fow == j]], fow2rev[fow[fow == 
                   i]]))
             } else if (i %in% fow & j %in% rev) {
                 if (fow[fow == i] <= rev2fow[rev == j]) 
@@ -43,8 +43,8 @@ getConstraints = function(state.type) {
                     i]))
             } else if (i %in% u & j %in% fow) {
                 constraints[[length(constraints) + 1]] = list(UF = c(u[which(u == 
-                  i)], fow[which(fow == j)]), RU = c(fow2rev[fow[fow == j]], u[which(u == 
-                  i)]))
+                  i)], fow[which(fow == j)]), RU = c(fow2rev[fow[fow == 
+                  j]], u[which(u == i)]))
             } else if (i %in% fow & j %in% u) {
                 constraints[[length(constraints) + 1]] = list(FU = c(fow[which(fow == 
                   i)], u[which(u == j)]), UR = c(u[which(u == j)], fow2rev[which(fow == 

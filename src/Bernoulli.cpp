@@ -11,16 +11,16 @@ Bernoulli::Bernoulli(ParamContainerEmissions *emissionParams)
     this->emissionParams = emissionParams;
 
     int mem = sizeof(double) * this->emissionParams->getD() * 4
-              + sizeof(double*) * this->emissionParams->getD() * 2;
+        + sizeof(double*) * this->emissionParams->getD() * 2;
     if (DEBUG_MEMORY)
     {
         printf("new->Bernoulli; (%d bytes) \n", mem);
     }
 
     this->updateNumeratorP = (double*) malloc(
-                                 sizeof(double) * this->emissionParams->getD());
+        sizeof(double) * this->emissionParams->getD());
     this->updateDenominatorP = (double*) malloc(
-                                   sizeof(double) * this->emissionParams->getD());
+        sizeof(double) * this->emissionParams->getD());
 
     int d1, d2;
     for (d1 = 0; d1 < this->emissionParams->getD(); d1++)
@@ -39,7 +39,7 @@ Bernoulli::~Bernoulli()
     free(this->updateDenominatorP);
 
     int mem = sizeof(double) * this->emissionParams->getD() * 4
-              + sizeof(double*) * this->emissionParams->getD() * 2;
+        + sizeof(double*) * this->emissionParams->getD() * 2;
     if (DEBUG_MEMORY)
     {
         printf("delete->Bernoulli; (%d bytes) ", mem);
@@ -54,7 +54,7 @@ double Bernoulli::getP()
 }
 
 
-double Bernoulli::calcEmissionProbability(double *obs, int isna)
+double Bernoulli::calcEmissionProbability(double *obs, int isna, int currN)
 {
 
     int i, j, obs_i;
@@ -76,9 +76,9 @@ double Bernoulli::calcEmissionProbability(double *obs, int isna)
             {
 
                 probability = probability
-                              * pow(this->emissionParams->getBernoulliP(), obs[obs_i])
-                              * pow((1 - this->emissionParams->getBernoulliP()),
-                                    (1 - obs[obs_i]));
+                    * pow(this->emissionParams->getBernoulliP(), obs[obs_i])
+                    * pow((1 - this->emissionParams->getBernoulliP()),
+                    (1 - obs[obs_i]));
 
             }
         }
@@ -94,7 +94,7 @@ double Bernoulli::calcEmissionProbability(double *obs, int isna)
 
 
 void Bernoulli::updateAuxiliaries(double*** observations, double** gamma,
-                                  double* Pk, int* T, int n, int i, int** isNaN)
+double* Pk, int* T, int n, int i, int** isNaN)
 {
     int t, d, l, obs_d;
     double numer, denom;
@@ -111,8 +111,8 @@ void Bernoulli::updateAuxiliaries(double*** observations, double** gamma,
             {
 //numer = numer + gamma[t][i] * observations[n][t][d]; //indikator
                 numer = numer
-                        //IndicatorFct(observations[n][t][obs_d]);
-                        + gamma[t][i] * observations[n][t][obs_d];
+                                                  //IndicatorFct(observations[n][t][obs_d]);
+                    + gamma[t][i] * observations[n][t][obs_d];
                 denom = denom + gamma[t][i];
             }
 //	printf("obs[%d][%d]=%f, gamma=%f\n", t, obs_d, observations[n][t][obs_d],gamma[t][i]);
@@ -135,7 +135,7 @@ int Bernoulli::IndicatorFct(int obs)
 
 
 void Bernoulli::updateAuxiliariesCoupled(double*** observations, double** gamma,
-        double* Pk, int* T, int n, int i, int statecouple, int** isNaN)
+double* Pk, int* T, int n, int i, int statecouple, int** isNaN)
 {
     int t, d, l, obs_d;
     double numer, denom;
@@ -151,8 +151,8 @@ void Bernoulli::updateAuxiliariesCoupled(double*** observations, double** gamma,
             if (isNaN[n][t] == 0)
             {
                 numer = numer
-                        + (gamma[t][i] + gamma[t][statecouple])
-                        * observations[n][t][obs_d];  //IndicatorFct(observations[n][t][obs_d]);
+                    + (gamma[t][i] + gamma[t][statecouple])
+                    * observations[n][t][obs_d];  //IndicatorFct(observations[n][t][obs_d]);
                 denom = denom + (gamma[t][i] + gamma[t][statecouple]);
             }
         }
@@ -164,8 +164,8 @@ void Bernoulli::updateAuxiliariesCoupled(double*** observations, double** gamma,
 
 
 void Bernoulli::updateAuxiliariesCoupledRevop(double*** observations,
-        double** gamma, double* Pk, int* T, int n, int i, int statecouple,
-        int* state2flag, int* revop, int** isNaN)
+double** gamma, double* Pk, int* T, int n, int i, int statecouple,
+int* state2flag, int* revop, int** isNaN)
 {
     int t, d, l, obs_d;
     double numer, denom;
@@ -184,20 +184,20 @@ void Bernoulli::updateAuxiliariesCoupledRevop(double*** observations,
             {
                 if (state2flag[statecouple] == 1)
                 {
-                    //IndicatorFct(observations[n][t][obs_d])
+                                                  //IndicatorFct(observations[n][t][obs_d])
                     numer = numer + gamma[t][i] *observations[n][t][obs_d]
-                            + gamma[t][statecouple]
-                            //IndicatorFct(
-                            * observations[n][t][revop[obs_d]];
+                        + gamma[t][statecouple]
+                                                  //IndicatorFct(
+                        * observations[n][t][revop[obs_d]];
 //observations[n][t][revop[obs_d]]);
                 }
                 else
                 {
                     numer = numer
-                            //IndicatorFct(observations[n][t][revop[obs_d]])
-                            + gamma[t][i] * observations[n][t][revop[obs_d]]
-                            + gamma[t][statecouple]
-                            * observations[n][t][obs_d];//IndicatorFct(observations[n][t][obs_d]);
+                                                  //IndicatorFct(observations[n][t][revop[obs_d]])
+                        + gamma[t][i] * observations[n][t][revop[obs_d]]
+                        + gamma[t][statecouple]
+                        * observations[n][t][obs_d];//IndicatorFct(observations[n][t][obs_d]);
                 }
                 denom = denom + (gamma[t][i] + gamma[t][statecouple]);
             }
@@ -210,8 +210,8 @@ void Bernoulli::updateAuxiliariesCoupledRevop(double*** observations,
 
 
 void Bernoulli::updateCoupledRevop(double ***observations, double* Pk,
-                                   int statecouple, int* state2flag, int* revop, double** revGammaAux,
-                                   int** isNaN, SEXP emissionPrior, int currN)
+int statecouple, int* state2flag, int* revop, double** revGammaAux,
+int** isNaN, SEXP emissionPrior, int currN, int ncores)
 {
 
 //printf("************ update Coupled REvop\n");
@@ -233,30 +233,30 @@ void Bernoulli::updateCoupledRevop(double ***observations, double* Pk,
 // was mach ich aus dem prior
 double Bernoulli::Prior(SEXP hyperparams)
 {
-    /*int i, j;
-    for (i = 0; i < this->emissionParams->getD(); i++) {
-        for (j = 0; j < this->emissionParams->getD(); j++) {
-            REAL(getListElement(hyperparams, "cov"))[i
-                    + j * this->emissionParams->getD()] =
-                    this->emissionParams->getGaussianSIGMA()[i][j];
-            // Rprintf("%f ", this->emissionParams->getGaussianSIGMA()[i][j]);
-        }
-        //Rprintf("\n");
+/*int i, j;
+for (i = 0; i < this->emissionParams->getD(); i++) {
+    for (j = 0; j < this->emissionParams->getD(); j++) {
+        REAL(getListElement(hyperparams, "cov"))[i
+                + j * this->emissionParams->getD()] =
+                this->emissionParams->getGaussianSIGMA()[i][j];
+        // Rprintf("%f ", this->emissionParams->getGaussianSIGMA()[i][j]);
     }
+    //Rprintf("\n");
+}
 
-    // call solnp from R for optimization
-    SEXP call = PROTECT(lang2(install("calldiwish"), hyperparams));
-    SEXP res = PROTECT(eval(call, R_GlobalEnv));
-    double out = REAL(res)[0];
-    //Rprintf("%f\n", out);
-    UNPROTECT(2);
-    //return out;*/
+// call solnp from R for optimization
+SEXP call = PROTECT(lang2(install("calldiwish"), hyperparams));
+SEXP res = PROTECT(eval(call, R_GlobalEnv));
+double out = REAL(res)[0];
+//Rprintf("%f\n", out);
+UNPROTECT(2);
+//return out;*/
     return 0;
 }
 
 
 void Bernoulli::update(double ***observations, double* Pk, int** isNaN,
-                       SEXP emissionPrior, int currN)
+SEXP emissionPrior, int currN, int ncores)
 {
 //printf("Entered first update fct from Bernoulli\n");
     int skipcounter = 0;
@@ -274,4 +274,17 @@ void Bernoulli::update(double ***observations, double* Pk, int** isNaN,
 
 //printf("\n");
 
+}
+
+
+void Bernoulli::setParsToTwin(EmissionFunction* myTwinEmission, int currN, double*** observations)
+{
+    this->emissionParams->setBernoulliP(myTwinEmission->getParameter()->getBernoulliP());
+    int d;
+    for (d = 0; d < this->emissionParams->getD(); d++)
+    {
+        this->updateNumeratorP[d] = 0;
+        this->updateDenominatorP[d] = 0;
+
+    }
 }

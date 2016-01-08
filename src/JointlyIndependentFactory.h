@@ -13,36 +13,27 @@ using namespace std;
 
 class JointlyIndependentFactory : public EmissionFactory
 {
-public:
-    EmissionFunction* createEmissionFunction(ParamContainerEmissions *emissionParams, int parallel)
-    {
-        if(DEBUG_MEMORY)
+    public:
+        EmissionFunction* createEmissionFunction(ParamContainerEmissions *emissionParams, int parallel)
         {
-            printf("createEmissionFunction factory->create():");
+            if(DEBUG_MEMORY)
+            {
+                printf("createEmissionFunction factory->create():");
+            }
+            return NULL;
         }
-        return NULL;
-    }
 
-    EmissionFunction* createEmissionFunctionMixed(list<EmissionFunction*> efb, ParamContainerEmissions *emissionParams)
-    {
-        int parallel=0;
-        if(DEBUG_MEMORY)
+        EmissionFunction* createEmissionFunctionMixed(list<EmissionFunction*> efb, ParamContainerEmissions *emissionParams)
         {
-            printf("createEmissionFunctionMixed factory->create():");
-        }
-        if(parallel == 0)
-        {
+            int parallel=0;
+            if(DEBUG_MEMORY)
+            {
+                printf("createEmissionFunctionMixed factory->create():");
+            }
             return new JointlyIndependent(efb, emissionParams);
         }
-        else if(parallel == 1)
-        {
-            return new JointlyIndependent(efb, emissionParams);
 
-        }
-    // create Emission Function Mixed; wird überschriebn
-    }
-
-    JointlyIndependentFactory() {}
-    ~JointlyIndependentFactory() { }
+        JointlyIndependentFactory() {}
+        ~JointlyIndependentFactory() { }
 };
 #endif

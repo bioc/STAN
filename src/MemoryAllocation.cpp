@@ -53,6 +53,7 @@ int allocateMemAlpha(double*** alpha, int maxLen, int K)
     {
         printf("Alpha needs %lf MB of memory.\n", megabytes_used);
     }
+//printf("Available system memory: %d\n", (unsigned int) getTotalSystemMemory());
     return memory_used;
 }
 
@@ -80,6 +81,7 @@ int allocateMemBeta(double*** beta, int maxLen, int K)
     {
         printf("Beta needs %lf MB of memory.\n", megabytes_used);
     }
+//printf("Available system memory: %d\n", (unsigned int) getTotalSystemMemory());
     return memory_used;
 
 }
@@ -103,6 +105,7 @@ int allocateMemRescFac(double** c, int maxLen, int K)
     {
         printf("Rescaling factor needs %lf MB of memory.\n", megabytes_used);
     }
+//printf("Available system memory: %d\n", (unsigned int) getTotalSystemMemory());
     return memory_used;
 
 }
@@ -133,6 +136,7 @@ int allocateMemGamma(double*** gamma, int maxLen, int K)
     {
         printf("Gamma needs %lf MB of memory.\n", megabytes_used);
     }
+//printf("Available system memory: %d\n", (unsigned int) getTotalSystemMemory());
     return memory_used;
 
 }
@@ -169,6 +173,7 @@ int allocateMemXsi(double**** xsi, int maxLen, int K)
     {
         printf("Xsi needs %lf MB of memory.\n", megabytes_used);
     }
+//printf("Available system memory: %d\n", (unsigned int) getTotalSystemMemory());
     return memory_used;
 
 }
@@ -199,6 +204,7 @@ int allocateMemEmissionProb(double*** emissionProb, int maxLen, int K)
     {
         printf("Emission probabilities need %lf MB of memory.\n", megabytes_used);
     }
+//printf("Available system memory: %d\n", (unsigned int) getTotalSystemMemory());
     return memory_used;
 
 }

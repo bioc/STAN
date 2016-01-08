@@ -1,0 +1,17 @@
+
+citEntry(entry="article",
+         title = "Annotation of genomics data using bidirectional hidden Markov models unveils variations in Pol II transcription cycle",
+         author = personList( as.person("Zacher B."), 
+                              as.person("Lidschreiber M."),
+                              as.person("Cramer P."),
+                              as.person("Gagneur J."),
+                              as.person("Tresch A.")),
+         year = 2014,
+         journal = "Mol. Syst. Biol.",
+         volume = "10",
+         pages = "768",
+         
+         textVersion = 
+         paste("Zacher, B.  and Lidschreiber, M.  and Cramer, P.  and Gagneur, J.  and Tresch, A.  (2014):", 
+               "Annotation of genomics data using bidirectional hidden Markov models unveils variations in Pol II transcription cycle",
+                "Mol. Syst. Biol. 10:768" ) )

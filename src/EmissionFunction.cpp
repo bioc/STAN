@@ -1,6 +1,9 @@
 
 #include "EmissionFunction.h"
 
+void EmissionFunction::computeShared(EmissionFunction** myEmissions, int nStates) {}
+void EmissionFunction::resetShared() {}
+
 EmissionFunction** allocateEmissionFunctionVector(int d)
 {
     EmissionFunction **vector = (EmissionFunction**)malloc(sizeof(EmissionFunction*)*d);
@@ -22,3 +25,9 @@ std::list<EmissionFunction*>  EmissionFunction::getEmissionFunctionList()
 {
     return this->ContainerList;
 }
+
+
+// EmissionFunction::~EmissionFunction(){
+// 	printf("yo\n");
+// 	//delete this->emissionParams;
+// }

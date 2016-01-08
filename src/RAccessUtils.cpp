@@ -7,10 +7,10 @@ SEXP getListElement(SEXP list, const char *str)
     int i;
     for ( i = 0; i < length(list); i++ )
         if ( strcmp(CHAR(STRING_ELT(names, i)), str) == 0 )
-        {
-            elmt = VECTOR_ELT(list, i);
-            break;
-        }
+    {
+        elmt = VECTOR_ELT(list, i);
+        break;
+    }
 
     if ( elmt == R_NilValue )
         error("%s missing from list", str);
