@@ -1,5 +1,5 @@
 Package: STAN
-Version: 1.99.0
+Version: 1.99.1
 Date: 2016-01-04
 Title: The genomic STate ANnotation package
 Author: Benedikt Zacher, Julia Ertl, Julien Gagneur, Achim Tresch
@@ -8,7 +8,7 @@ Imports: GenomicRanges, IRanges, S4Vectors, BiocGenerics, GenomeInfoDb, Gviz, Rs
 Depends: methods, poilog, parallel
 VignetteBuilder: knitr
 Suggests: BiocStyle, gplots, knitr
-Description: Genome segmentation with hidden Markov models has become a useful tool to annotate genomic elements, such as promoters and enhancers by data integration. STAN (genomic STate ANnotation) implements (bidirectional) hidden Markov models (HMMs) using a variety of different probability distributions, which can be used to model a wide range of current genomic data. The use of these distributions enables integrating a wide range of genomic data types (e.g. continuous, discrete, binary) to de novo learn and annotate the genome into a given number of 'genomic states'. The 'genomic states' may for instance reflect distinct genome-associated protein complexes (e.g. 'transcription states') or describe recurring patterns of chromatin features (or 'chromatin state'). Unlike other tools, STAN also allows for the integration of strand-specific (e.g. RNA)  and non-strand-specific data (e.g. ChIP).
+Description: Genome segmentation with hidden Markov models has become a useful tool to annotate genomic elements, such as promoters and enhancers. STAN (genomic STate ANnotation) implements (bidirectional) hidden Markov models (HMMs) using a variety of different probability distributions, which can model a wide range of current genomic data (e.g. continuous, discrete, binary). STAN de novo learns and annotates the genome into a given number of 'genomic states'. The 'genomic states' may for instance reflect distinct genome-associated protein complexes (e.g. 'transcription states') or describe recurring patterns of chromatin features (referred to as 'chromatin states'). Unlike other tools, STAN also allows for the integration of strand-specific (e.g. RNA)  and non-strand-specific data (e.g. ChIP).
 License: GPL (>= 2)
 biocViews: HiddenMarkovModel, GenomeAnnotation, Microarray, Sequencing, ChIPSeq, RNASeq, ChipOnChip, Transcription
 LazyLoad: yes

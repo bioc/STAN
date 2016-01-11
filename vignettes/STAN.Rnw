@@ -1,4 +1,4 @@
-%\VignetteIndexEntry{STrand-specific ANnotation of genomic data}
+%\VignetteIndexEntry{The genomic STate ANnotation package}
 %\VignetteDepends{}
 %\VignetteKeywords{Genome Annotation, Hidden Markov Model}
 %\VignettePackage{STAN} % name of package
