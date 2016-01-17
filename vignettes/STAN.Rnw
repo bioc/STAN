@@ -23,7 +23,7 @@ opts_chunk$set(tidy=FALSE,dev="png",fig.show="hide",
 
 
 
-\author{Bendikt Zacher$^{1,2,*}$, Julia Ertl$^{1}$, Julien Gagneur$^{1}$, Achim
+\author{Benedikt Zacher$^{1,2,*}$, Julia Ertl$^{1}$, Julien Gagneur$^{1}$, Achim
 Tresch$^{1,2,3}$ \\[1em] \small{$^{1}$ Gene Center and Department of Biochemistry, LMU, Munich, Germany} \\ \small{$^{2}$ Institute for
 Genetics, University of Cologne, Cologne, Germany} \\
 \small{$^{3}$
