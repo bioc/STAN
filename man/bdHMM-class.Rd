@@ -4,6 +4,7 @@
 \name{bdHMM-class}
 \alias{.bdHMM}
 \alias{bdHMM-class}
+\alias{[,bdHMM,ANY,ANY,ANY-method}
 \title{This class is a generic container for bidirectional Hidden Markov Models.}
 \description{
 This class is a generic container for bidirectional Hidden Markov Models.
@@ -33,6 +34,11 @@ This class is a generic container for bidirectional Hidden Markov Models.
 
 \item{\code{dirScore}}{Directionlity score of states of a fitted bdHMM.}
 }}
+\section{Methods}{
+  \describe{
+    \item{[}{get elements from the bdHMM}
+    }
+}
 \examples{
 nStates = 5
 stateNames = c('F1', 'F2', 'R1', 'R2', 'U1')

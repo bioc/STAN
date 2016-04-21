@@ -4,6 +4,7 @@
 \name{HMM-class}
 \alias{.HMM}
 \alias{HMM-class}
+\alias{[,HMM,ANY,ANY,ANY-method}
 \title{This class is a generic container for Hidden Markov Models.}
 \description{
 This class is a generic container for Hidden Markov Models.
@@ -27,6 +28,11 @@ This class is a generic container for Hidden Markov Models.
 
 \item{\code{LogLik}}{Log likelihood of a fitted HMM.}
 }}
+\section{Methods}{
+  \describe{
+    \item{[}{get elements from the HMM}
+    }
+}
 \examples{
 
 nStates = 5

@@ -979,16 +979,13 @@ DirScore = function(bdhmm) {
     out
 }
 
+
+#' extract parts of HMM
 #'
-#' This function subsets an HMM object. Rows are interpreted as states, columns as dimensions of emissions.
-#'
-#' @param x A hidden Markov model.
-#' @param i State ids to extract.
-#' @param j Emissions to extract.
-#' @param drop ...
-#' @param ... ...
-#'  
-#' @export
+#' @name [
+#' @aliases [,HMM,ANY,ANY,ANY-method
+#' @docType methods
+#' @rdname extract-methods
 setMethod("[", signature("HMM"), function(x, i, j, ..., drop="missing") {
     if (missing(i)) 
         i <- 1:x@nStates
@@ -1063,15 +1060,12 @@ setMethod("[", signature("HMM"), function(x, i, j, ..., drop="missing") {
 
 
 
-#' This function subsets a bdHMM object. Rows are interpreted as states, columns as dimensions of emissions.
+#' extract parts of bdHMM
 #'
-#' @param x A bidirectional hidden Markov model.
-#' @param i State ids to extract.
-#' @param j Emissions to extract.
-#' @param drop ...
-#' @param ... ...
-#'  
-#' @export
+#' @name [
+#' @aliases [,bdHMM,ANY,ANY,ANY,-method
+#' @docType methods
+#' @rdname extract-methods
 setMethod("[", signature("bdHMM"), function(x, i, j, ..., drop="missing") {
     if (missing(i)) 
         i <- 1:x@nStates
