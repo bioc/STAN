@@ -1,6 +1,6 @@
 Package: STAN
-Version: 2.0.2
-Date: 2016-04-21
+Version: 2.0.3
+Date: 2016-05-30
 Title: The genomic STate ANnotation package
 Author: Benedikt Zacher, Julia Ertl, Julien Gagneur, Achim Tresch
 Maintainer: Benedikt Zacher <zacher@genzentrum.lmu.de>
