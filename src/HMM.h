@@ -75,16 +75,16 @@ class HMM
         ~HMM();                                   //virtual
 
         virtual void getAlphaBeta(double*** obs, double **alpha, double **beta, double *c, double **emissionProb, int* T, int n, int ncores, double effective_zero, int verbose);
-        list<double> BaumWelch(double*** observations, int* T, int nsample, int maxIters, int** flags, int* state2flag, int* couples, int* revop, int verbose, int updateTransMat, int** isNaN, double*** fixedEmission, SEXP bidirOptimParams, SEXP emissionPrior, int ncores, double effective_zero, double convergence, int incrementalEM);
+        list<double> BaumWelch(double*** observations, int* T, int nsample, int maxIters, int** flags, int* state2flag, int* couples, int* revop, int verbose, int updateTransMat, int** isNaN, double*** fixedEmission, SEXP bidirOptimParams, SEXP emissionPrior, int ncores, double effective_zero, double convergence, int incrementalEM, int clust);
         virtual int allocateMemEM(double*** emissionProb, double*** alpha, double*** beta, double*** gamma, double**** xsi, double** c, double** Pk, int maxLen, int nsample);
         virtual int deallocateMemEM(double** emissionProb, double** alpha, double** beta, double** gamma, double*** xsi, double* c, double* Pk, int maxLen, int nsample);
         virtual void getGammaXsi(double** alpha, double** beta, double* c, double** emissionProb, double** gamma, double*** xsi, int* T, int n, int ncores, double effective_zero, int verbose);
         virtual void calcEmissionProbs(double*** obs, double** emissionProb, int* T, int n, int** flags, int* state2flag, int* revop, int** isNaN, int ncores, int verbose, int* couples);
         void reverseObs(double *orig, double** rev, int* revop, int D);
         void Viterbi(int **S, double*** obs, int nsample, int* T, int verbose, int** isNaN, double*** fixedEmission);
-        void updateSampleAux(double*** observations, int* T, int n, double** alpha, double** beta, double** gamma, double*** xsi, double* Pk, int* state2flag, int* couples, int* revop, int** isNaN, double*** fixedEmission, SEXP bidirOptimParams, SEXP emissionPrior, int ncores, double effective_zero, int verbose);
+        void updateSampleAux(double*** observations, int* T, int n, double** alpha, double** beta, double** gamma, double*** xsi, double* Pk, int* state2flag, int* couples, int* revop, int** isNaN, double*** fixedEmission, SEXP bidirOptimParams, SEXP emissionPrior, int ncores, double effective_zero, int verbose, int clust, int nsample);
         void getGamma(double** alpha, double** beta, double* c,  double** emissionProb, double** gamma, int* T, int n, int ncores, double effective_zero, int verbose);
-        void updateModelParams(double*** observations, int nsample, int* state2flag, int* couples, int* revop, int verbose, int updateTransMat, int** isNaN, double*** fixedEmission, SEXP bidirOptimParams, SEXP emissionPrior, int ncores, double effective_zero, int* myStateBuckets, double* Pk, int curriter, int currN, int* T);
+        void updateModelParams(double*** observations, int nsample, int* state2flag, int* couples, int* revop, int verbose, int updateTransMat, int** isNaN, double*** fixedEmission, SEXP bidirOptimParams, SEXP emissionPrior, int ncores, double effective_zero, int* myStateBuckets, double* Pk, int curriter, int currN, int* T, int clust);
 
         void getDirScore(double* dirScore, int** flags, int* state2flag, int* couples, int* revop, int** isNaN, double*** observations, double*** fixedEmission, int nStates, int nsample, int* T, int ncores, double effective_zero);
 };

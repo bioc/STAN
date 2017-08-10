@@ -21,12 +21,11 @@ Compute average signal in state segmentation
 }
 \examples{
 data(yeastTF_databychrom_ex)
-nStates = 6
+dStates = 6
 dirobs = as.integer(c(rep(0,10), 1, 1))
-bdhmm_gauss = initBdHMM(yeastTF_databychrom_ex, nStates, "Gaussian", directedObs=dirobs)
+bdhmm_gauss = initBdHMM(yeastTF_databychrom_ex, dStates = dStates, method = "Gaussian", directedObs=dirobs)
 bdhmm_fitted_gauss = fitHMM(yeastTF_databychrom_ex, bdhmm_gauss)
 viterbi_bdhmm_gauss = getViterbi(bdhmm_fitted_gauss, yeastTF_databychrom_ex)
 avg_signal = getAvgSignal(viterbi_bdhmm_gauss, yeastTF_databychrom_ex)
 
 }
-

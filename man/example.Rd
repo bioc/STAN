@@ -11,4 +11,3 @@ The data for the bdHMM example in the vignette and examples in the manual
 Benedikt Zacher, Julia Ertl, Julien Gagneur, Achim Tresch
 }
 \keyword{data}
-

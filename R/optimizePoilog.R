@@ -4,7 +4,7 @@
 #' @keywords internal
 #' @noRd
 initPoiLog = function(km, signalbychrom, celltypes = NULL, stateLabels = NULL, 
-    directedObs = NULL, sizeFactor = NULL) {
+    directedObs = NULL, sizeFactor = NULL, indexStates = NULL) {
     celltypes = list(CD4T = 1)
     myAvg = apply(t(sapply(celltypes, function(x) apply(do.call("rbind", 
         signalbychrom[x]), 2, sum))), 2, mean)
@@ -71,7 +71,7 @@ initPoiLog = function(km, signalbychrom, celltypes = NULL, stateLabels = NULL,
                 rev.operation[i] = myPair
             }
         }
-        cl2init = cl2init[c(rep(grep("F", stateLabels), 2), grep("U", stateLabels))]
+        cl2init = cl2init[c(rep(grep("D", indexStates), 2), grep("U", indexStates))]
         myR = grep("R", stateLabels)
         cl2init[myR] = lapply(cl2init[myR], function(x) x[, rev.operation])
         for (currDim in 1:myD) {

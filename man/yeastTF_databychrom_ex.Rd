@@ -11,4 +11,3 @@ Processed ChIP-on-chip data for yeast TF example
 Benedikt Zacher, Julia Ertl, Julien Gagneur, Achim Tresch
 }
 \keyword{data}
-

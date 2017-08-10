@@ -28,4 +28,3 @@ Emission(hmm)
 \seealso{
 \code{\linkS4class{HMMEmission}}
 }
-

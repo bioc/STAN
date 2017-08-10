@@ -25,4 +25,3 @@ hmm = HMM(dimNames="1", initProb=initProb, transMat=transMat, emission=HMMEmissi
 DimNames(hmm)
 
 }
-

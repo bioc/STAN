@@ -19,4 +19,3 @@ Calculate density of the Poisson-Log-Normal distribution.
 call_dpoilog(c(5, 2, 1))
 
 }
-

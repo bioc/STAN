@@ -35,4 +35,3 @@ hmm_fitted = fitHMM(observations, hmm_ex)
 posterior = getPosterior(hmm_fitted, observations)
 
 }
-

@@ -26,4 +26,3 @@ sizeFactors = getSizeFactors(trainRegions, celltypes)
 sizeFactors
 
 }
-

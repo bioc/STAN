@@ -28,4 +28,3 @@ EmissionParams(hmm)
 \seealso{
 \code{\linkS4class{HMMEmission}, \linkS4class{HMM}, \linkS4class{bdHMM}}
 }
-

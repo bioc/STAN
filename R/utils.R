@@ -118,9 +118,9 @@ binarizeData = function(obs) {
 #' @examples
 #' library(GenomicRanges) 
 #' data(yeastTF_databychrom_ex)
-#' nStates = 6
+#' dStates = 6
 #' dirobs = as.integer(c(rep(0,10), 1, 1))
-#' bdhmm_gauss = initBdHMM(yeastTF_databychrom_ex, nStates, "Gaussian", directedObs=dirobs)
+#' bdhmm_gauss = initBdHMM(yeastTF_databychrom_ex, dStates = dStates, method ="Gaussian", directedObs=dirobs)
 #' bdhmm_fitted_gauss = fitHMM(yeastTF_databychrom_ex, bdhmm_gauss)
 #' viterbi_bdhmm_gauss = getViterbi(bdhmm_fitted_gauss, yeastTF_databychrom_ex)
 #' yeastGRanges = GRanges(IRanges(start=1214616, end=1225008), seqnames="chrIV")
@@ -163,9 +163,9 @@ viterbi2GRanges = function(viterbi, regions, binSize) {
 #' 
 #' @examples
 #' data(yeastTF_databychrom_ex)
-#' nStates = 6
+#' dStates = 6
 #' dirobs = as.integer(c(rep(0,10), 1, 1))
-#' bdhmm_gauss = initBdHMM(yeastTF_databychrom_ex, nStates, "Gaussian", directedObs=dirobs)
+#' bdhmm_gauss = initBdHMM(yeastTF_databychrom_ex, dStates = dStates, method = "Gaussian", directedObs=dirobs)
 #' bdhmm_fitted_gauss = fitHMM(yeastTF_databychrom_ex, bdhmm_gauss)
 #' viterbi_bdhmm_gauss = getViterbi(bdhmm_fitted_gauss, yeastTF_databychrom_ex)
 #' avg_signal = getAvgSignal(viterbi_bdhmm_gauss, yeastTF_databychrom_ex)
@@ -227,13 +227,14 @@ data2Gviz = function(obs, regions, binSize, gen, col = "black") {
 #' @param from Genomic start poistion.
 #' @param to Genomic end poistion.
 #' @param statecols Named vector with state colors.
+#' @param col Background color.
 #' 
 #' @return A list containing the viterbi path converted to Gviz objects for plotting.
-#' @usage viterbi2Gviz(viterbi, chrom, gen, from, to, statecols)
+#' @usage viterbi2Gviz(viterbi, chrom, gen, from, to, statecols, col = NULL)
 #' 
 #' @export viterbi2Gviz
-viterbi2Gviz = function(viterbi, chrom, gen, from, to, statecols) {
-    
+viterbi2Gviz = function(viterbi, chrom, gen, from, to, statecols, col = NULL) {
+    if(is.null(col)) col = "transparent"
     myViterbiPanels = list()
     viterbi = viterbi[as.character(seqnames(viterbi)) == chrom]
     for (dir in "*") {
@@ -241,7 +242,7 @@ viterbi2Gviz = function(viterbi, chrom, gen, from, to, statecols) {
         
         myViterbiPanels[[dir]] = AnnotationTrack(range = currGRange, genome = gen, 
             chromosome = chrom, name = "", id = currGRange$name, shape = "box", 
-            fill = statecols[currGRange$name], col = "transparent", stacking = "dense")
+            fill = statecols[currGRange$name], col = "transparent", stacking = "dense", background.panel = col)
     }
     myViterbiPanels
 }

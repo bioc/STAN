@@ -33,4 +33,3 @@ hmm_fitted = fitHMM(observations, hmm_ex)
 viterbi = getViterbi(hmm_fitted, observations)
 
 }
-

@@ -4,14 +4,18 @@
 \alias{initBdHMM}
 \title{Initialization of bidirectional hidden Markov models}
 \usage{
-initBdHMM(obs, nStates, method, directedObs = rep(0, ncol(obs[[1]])), sizeFactors = matrix(1, nrow = length(obs), ncol = ncol(obs[[1]])), sharedCov = FALSE)
+initBdHMM(obs, dStates = 0, uStates = 0, method, dirFlags = NULL, directedObs = rep(0, ncol(obs[[1]])), sizeFactors = matrix(1, nrow = length(obs), ncol = ncol(obs[[1]])), sharedCov = FALSE)
 }
 \arguments{
 \item{obs}{The observations. A list of one or more entries containing the observation matrix (\code{numeric}) for the samples (e.g. chromosomes).}
 
-\item{nStates}{The number of states.}
+\item{dStates}{The number of directed states.}
+
+\item{uStates}{The number of undirected states.}
 
 \item{method}{Emission distribution of the model. One out of c("NegativeBinomial", "PoissonLogNormal", "NegativeMultinomial", "ZINegativeBinomial", "Poisson", "Bernoulli", "Gaussian", "IndependentGaussian")}
+
+\item{dirFlags}{The flag sequence is needed when a bdHMM is fitted on undirected data (e.g.) ChIP only. It is a \code{list} of \code{character} vectors indication for each position its knwon directionality. U allows all states. F allows undirected states and states in forward direction. R allows undirected states and states in reverse direction.}
 
 \item{directedObs}{Integer vector defining the directionality (or strand-specificity) of the data tracks. Undirected (non-strand-specific) data tracks (e.g. ChIP) are indicated indicated by '0'. Directed (strand-specific) data tracks are indicated by increasing pairs of integers. For instance c(0,0,0,1,1,2,2): The first three data tracks are undirected, followed by two pairs of directed measurements.}
 
@@ -28,7 +32,6 @@ Initialization of bidirectional hidden Markov models
 \examples{
 
 data(example)
-hmm_ex = initHMM(observations, nStates=3, method="Gaussian") 
+bdHMM_ex = initBdHMM(observations, dStates=3, method="Gaussian") 
 
 }
-

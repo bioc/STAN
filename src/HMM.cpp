@@ -745,7 +745,7 @@ int HMM::deallocateMemEM(double** emissionProb, double** alpha, double** beta, d
 }
 
 
-void HMM::updateSampleAux(double*** observations, int* T, int n, double** alpha, double** beta, double** gamma, double*** xsi, double* Pk, int* state2flag, int* couples, int* revop, int** isNaN, double*** fixedEmission, SEXP bidirOptimParams, SEXP emissionPrior, int ncores, double effective_zero, int verbose)
+void HMM::updateSampleAux(double*** observations, int* T, int n, double** alpha, double** beta, double** gamma, double*** xsi, double* Pk, int* state2flag, int* couples, int* revop, int** isNaN, double*** fixedEmission, SEXP bidirOptimParams, SEXP emissionPrior, int ncores, double effective_zero, int verbose, int clust, int nsample)
 {
     int i;
     if(DEBUG)
@@ -773,7 +773,8 @@ void HMM::updateSampleAux(double*** observations, int* T, int n, double** alpha,
     }
     else
     {
-        this->A->updateAuxiliaries(gamma, xsi,  Pk, T, n, couples, bidirOptimParams, isNaN, ncores, effective_zero, verbose);
+//        Rprintf("using seconde else             updateAuxiliarites HMM.cpp l:777 \n");
+        this->A->updateAuxiliaries(gamma, xsi,  Pk, T, n, couples, bidirOptimParams, isNaN, ncores, effective_zero, verbose, clust, nsample);
     }
 
     if(this->K < ncores)
@@ -854,7 +855,7 @@ void HMM::updateSampleAux(double*** observations, int* T, int n, double** alpha,
 }
 
 
-void HMM::updateModelParams(double*** observations, int nsample, int* state2flag, int* couples, int* revop, int verbose, int updateTransMat, int** isNaN, double*** fixedEmission, SEXP bidirOptimParams, SEXP emissionPrior, int ncores, double effective_zero, int* myStateBuckets, double* Pk, int curriter, int currN, int* T)
+void HMM::updateModelParams(double*** observations, int nsample, int* state2flag, int* couples, int* revop, int verbose, int updateTransMat, int** isNaN, double*** fixedEmission, SEXP bidirOptimParams, SEXP emissionPrior, int ncores, double effective_zero, int* myStateBuckets, double* Pk, int curriter, int currN, int* T, int clust)
 {
 
 // Update transition matrix
@@ -870,7 +871,8 @@ void HMM::updateModelParams(double*** observations, int nsample, int* state2flag
         }
         else
         {
-            this->A->update(couples, effective_zero);
+//            Rprintf("using third else update HMM.cpp l:877\n");
+            this->A->update(couples, effective_zero, clust);
         }
     }
 
@@ -962,7 +964,7 @@ void HMM::updateModelParams(double*** observations, int nsample, int* state2flag
 }
 
 
-list<double> HMM::BaumWelch(double*** observations, int* T, int nsample, int maxIters, int** flags, int* state2flag, int* couples, int* revop, int verbose, int updateTransMat, int** isNaN, double*** fixedEmission, SEXP bidirOptimParams, SEXP emissionPrior, int ncores, double effective_zero, double convergence, int incrementalEM)
+list<double> HMM::BaumWelch(double*** observations, int* T, int nsample, int maxIters, int** flags, int* state2flag, int* couples, int* revop, int verbose, int updateTransMat, int** isNaN, double*** fixedEmission, SEXP bidirOptimParams, SEXP emissionPrior, int ncores, double effective_zero, double convergence, int incrementalEM, int clust)
 {
     int t,i,j,n;
 
@@ -1071,12 +1073,12 @@ list<double> HMM::BaumWelch(double*** observations, int* T, int nsample, int max
 
 // update auxiliary terms for the current sample n
 //	Rprintf("n HERE: %d\n", n);
-        this->updateSampleAux(observations, T, n, alpha, beta, gamma, xsi, Pk, state2flag, couples, revop, isNaN, fixedEmission, bidirOptimParams, emissionPrior, ncores, effective_zero, verbose);
+        this->updateSampleAux(observations, T, n, alpha, beta, gamma, xsi, Pk, state2flag, couples, revop, isNaN, fixedEmission, bidirOptimParams, emissionPrior, ncores, effective_zero, verbose, clust, nsample);
 //Rprintf("after\n");
         if(incrementalEM)
         {
 //Rprintf("incremental\n");
-            this->updateModelParams(observations, nsample, state2flag, couples, revop, verbose, updateTransMat, isNaN, fixedEmission, bidirOptimParams, emissionPrior, ncores, effective_zero, myStateBuckets, Pk, iter, n, T);
+            this->updateModelParams(observations, nsample, state2flag, couples, revop, verbose, updateTransMat, isNaN, fixedEmission, bidirOptimParams, emissionPrior, ncores, effective_zero, myStateBuckets, Pk, iter, n, T, clust);
 
         }
     }
@@ -1130,7 +1132,7 @@ llh = "Log-Posterior";
         {
 //	Rprintf("! incremental => %d\n", incrementalEM);
 
-            this->updateModelParams(observations, nsample, state2flag, couples, revop, verbose, updateTransMat, isNaN, fixedEmission, bidirOptimParams, emissionPrior, ncores, effective_zero, myStateBuckets, Pk, iter, -1, T);
+            this->updateModelParams(observations, nsample, state2flag, couples, revop, verbose, updateTransMat, isNaN, fixedEmission, bidirOptimParams, emissionPrior, ncores, effective_zero, myStateBuckets, Pk, iter, -1, T, clust);
         }
 
 // begin new sample (e.g. chromosome) => calculate E-Step for all samples of new model
@@ -1185,12 +1187,12 @@ llh = "Log-Posterior";
             }
 
 // update auxiliary terms for the current sample n
-            this->updateSampleAux(observations, T, n, alpha, beta, gamma, xsi, Pk, state2flag, couples, revop, isNaN, fixedEmission, bidirOptimParams, emissionPrior, ncores, effective_zero, verbose);
+            this->updateSampleAux(observations, T, n, alpha, beta, gamma, xsi, Pk, state2flag, couples, revop, isNaN, fixedEmission, bidirOptimParams, emissionPrior, ncores, effective_zero, verbose, clust, nsample);
             if(incrementalEM)
             {
 //Rprintf("incremental\n");
 
-                this->updateModelParams(observations, nsample, state2flag, couples, revop, verbose, updateTransMat, isNaN, fixedEmission, bidirOptimParams, emissionPrior, ncores, effective_zero, myStateBuckets, Pk, iter, n, T);
+                this->updateModelParams(observations, nsample, state2flag, couples, revop, verbose, updateTransMat, isNaN, fixedEmission, bidirOptimParams, emissionPrior, ncores, effective_zero, myStateBuckets, Pk, iter, n, T, clust);
             }
         }
 // end current sample

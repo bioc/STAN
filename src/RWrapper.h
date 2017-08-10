@@ -42,7 +42,7 @@
  *
  * @return returns results to R.
  */
-SEXP RHMMFit(SEXP sexpobs, SEXP sexppi, SEXP sexpA, SEXP sexpemission, SEXP sexptype, SEXP sexpdim, SEXP sexpregularize, SEXP sexpk, SEXP sexpmaxIters, SEXP sexpparallel, SEXP sexpflags, SEXP sexpstate2flag, SEXP sexpcouples, SEXP sexprevop, SEXP sexpverbose, SEXP sexpupdateTransMat, SEXP sexpfixedEmission, SEXP bidirOptimParams, SEXP emissionPrior, SEXP sexpeffectivezero, SEXP sepconvergence, SEXP sexpincrementalEM);
+SEXP RHMMFit(SEXP sexpobs, SEXP sexppi, SEXP sexpA, SEXP sexpemission, SEXP sexptype, SEXP sexpdim, SEXP sexpregularize, SEXP sexpk, SEXP sexpmaxIters, SEXP sexpparallel, SEXP sexpflags, SEXP sexpstate2flag, SEXP sexpcouples, SEXP sexprevop, SEXP sexpverbose, SEXP sexpupdateTransMat, SEXP sexpfixedEmission, SEXP bidirOptimParams, SEXP emissionPrior, SEXP sexpeffectivezero, SEXP sepconvergence, SEXP sexpincrementalEM, SEXP sexpclustering);
 SEXP RHMMVITERBI(SEXP sexpobs, SEXP sexppi, SEXP sexpA,  SEXP sexpemission, SEXP sexptype, SEXP sexpdim, SEXP sexpk, SEXP sexpverbose, SEXP sexpfixedEmission);
 SEXP RGETPOSTERIOR(SEXP sexpobs, SEXP sexppi, SEXP sexpA, SEXP sexpemission, SEXP sexptype, SEXP sexpdim, SEXP sexpk, SEXP sexpverbose, SEXP sexpfixedEmission, SEXP sexpncores, SEXP sexpflags, SEXP sexpstate2flag);
 SEXP RGETLOGLIK(SEXP sexpobs, SEXP sexppi, SEXP sexpA, SEXP sexpemission, SEXP sexptype, SEXP sexpdim, SEXP sexpk, SEXP sexpverbose, SEXP sexpfixedEmission, SEXP sexpncores, SEXP sexpflags, SEXP sexpstate2flag);

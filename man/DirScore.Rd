@@ -17,7 +17,7 @@ This function returns the directionality score of a bdHMM.
 }
 \examples{
 data(example)
-bdhmm_ex = initBdHMM(observations, nStates=3, method="Gaussian", directedObs=0)
+bdhmm_ex = initBdHMM(observations, dStates=3, method="Gaussian", directedObs=0)
 
 # without flags
 bdhmm_fitted_noFlags = fitHMM(observations, bdhmm_ex)
@@ -28,4 +28,3 @@ bdhmm_fitted_flags = fitHMM(observations, bdhmm_ex, dirFlags=flags)
 DirScore(bdhmm_fitted_flags)
 
 }
-

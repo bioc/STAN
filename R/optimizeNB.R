@@ -4,7 +4,7 @@
 #' @keywords internal
 #' @noRd
 initNB = function(km, signalbychrom, celltypes = NULL, stateLabels = NULL, 
-    directedObs = NULL, sizeFactor = NULL, zeroInflated = FALSE) {
+    directedObs = NULL, sizeFactor = NULL, zeroInflated = FALSE, indexStates = NULL) {
     celltypes = list(CD4T = 1)
     myAvg = apply(t(sapply(celltypes, function(x) apply(do.call("rbind", 
         signalbychrom[x]), 2, sum))), 2, mean)

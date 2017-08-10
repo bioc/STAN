@@ -13,6 +13,9 @@ HMMEmission(type = character(), parameters = list(), nStates = numeric())
 
 \item{nStates}{The number of states.}
 }
+\value{
+HMMEmission
+}
 \description{
 This function creates a HMMEmission object.
 }
@@ -24,4 +27,3 @@ transMat = matrix(1/nStates, nrow=nStates, ncol=nStates)
 initProb = rep(1/nStates, nStates)
 HMMEmission(type='Gaussian', parameters=list(mu=means, cov=Sigma), nStates=length(means))
 }
-

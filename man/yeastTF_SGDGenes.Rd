@@ -11,4 +11,3 @@ SGD annotation for the yeast TF example
 Benedikt Zacher, Julia Ertl, Julien Gagneur, Achim Tresch
 }
 \keyword{data}
-

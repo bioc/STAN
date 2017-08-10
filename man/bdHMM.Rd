@@ -31,6 +31,9 @@ bdHMM(initProb = numeric(), transMat = matrix(numeric(), ncol = 0, nrow =
 
 \item{dirScore}{Directionlity score of states of a fitted bdHMM.}
 }
+\value{
+bdHMM
+}
 \description{
 This function creates a bdHMM function.
 }
@@ -49,4 +52,3 @@ bdhmm = bdHMM(initProb=initProb, transMat=transMat, emission=myEmission, nStates
 \seealso{
 \code{\linkS4class{HMMEmission}}
 }
-

@@ -46,7 +46,7 @@ extern "C"
     R_CallMethodDef callMethods[] =
     {
         {"RHMMVITERBI", (DL_FUNC)&RHMMVITERBI, 9},
-        {"RHMMFit", (DL_FUNC)&RHMMFit, 22},
+        {"RHMMFit", (DL_FUNC)&RHMMFit, 23},
         {"RGETPOSTERIOR", (DL_FUNC)&RGETPOSTERIOR, 12},
         {"RGETLOGLIK", (DL_FUNC)&RGETLOGLIK, 12},
         {NULL, NULL, 0}
@@ -1341,7 +1341,7 @@ Rprintf("\n");}
         return viterbi;
     }
 
-    SEXP RHMMFit(SEXP sexpobs, SEXP sexppi, SEXP sexpA, SEXP sexpemission, SEXP sexptype, SEXP sexpdim, SEXP sexpregularize, SEXP sexpk, SEXP sexpmaxIters, SEXP sexpparallel, SEXP sexpflags, SEXP sexpstate2flag, SEXP sexpcouples, SEXP sexprevop, SEXP sexpverbose, SEXP sexpupdateTransMat, SEXP sexpfixedEmission, SEXP bidirOptimParams, SEXP emissionPrior, SEXP sexpeffectivezero, SEXP sepconvergence, SEXP sexpincrementalEM)
+    SEXP RHMMFit(SEXP sexpobs, SEXP sexppi, SEXP sexpA, SEXP sexpemission, SEXP sexptype, SEXP sexpdim, SEXP sexpregularize, SEXP sexpk, SEXP sexpmaxIters, SEXP sexpparallel, SEXP sexpflags, SEXP sexpstate2flag, SEXP sexpcouples, SEXP sexprevop, SEXP sexpverbose, SEXP sexpupdateTransMat, SEXP sexpfixedEmission, SEXP bidirOptimParams, SEXP emissionPrior, SEXP sexpeffectivezero, SEXP sepconvergence, SEXP sexpincrementalEM, SEXP sexpclustering)
     {
 
 // memory allocation
@@ -1362,6 +1362,7 @@ Rprintf("\n");}
         int i,j,k,n,t;
         int K = INTEGER(sexpk)[0];
         int ncores = INTEGER(sexpparallel)[0];
+        int clust = INTEGER(sexpclustering)[0];
 
 // parse observations
         int nsample = length(sexpobs);
@@ -1490,7 +1491,7 @@ Rprintf("\n");}
         double effective_zero = REAL(sexpeffectivezero)[0];
         double convergence = REAL(sepconvergence)[0];
 
-        list<double> loglik = myHMM->BaumWelch(obs, T, nsample, maxIters, flags, state2flag, couples, revop, verbose, updateTransMat, isNaN, fixedEmission, bidirOptimParams, emissionPrior, ncores, effective_zero, convergence, incrementalEM);
+        list<double> loglik = myHMM->BaumWelch(obs, T, nsample, maxIters, flags, state2flag, couples, revop, verbose, updateTransMat, isNaN, fixedEmission, bidirOptimParams, emissionPrior, ncores, effective_zero, convergence, incrementalEM, clust);
 
         double* dirScore = NULL;
 

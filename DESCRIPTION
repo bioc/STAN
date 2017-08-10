@@ -1,9 +1,9 @@
 Package: STAN
-Version: 2.5.0
-Date: 2016-05-30
-Title: The genomic STate ANnotation package
+Version: 2.5.1
+Date: 2017-08-10
+Title: The Genomic STate ANnotation Package
 Author: Benedikt Zacher, Julia Ertl, Julien Gagneur, Achim Tresch
-Maintainer: Benedikt Zacher <zacher@genzentrum.lmu.de>
+Maintainer: Rafael Campos-Martin <campos@mpipz.mpg.de>
 Imports: GenomicRanges, IRanges, S4Vectors, BiocGenerics, GenomeInfoDb, Gviz, Rsolnp
 Depends: methods, poilog, parallel
 VignetteBuilder: knitr
@@ -13,3 +13,4 @@ License: GPL (>= 2)
 biocViews: HiddenMarkovModel, GenomeAnnotation, Microarray, Sequencing, ChIPSeq, RNASeq, ChipOnChip, Transcription
 LazyLoad: yes
 Packaged: NA
+RoxygenNote: 6.0.1

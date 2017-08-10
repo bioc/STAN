@@ -57,7 +57,7 @@ double** TransitionMatrix::getTransMat()
 }
 
 
-void TransitionMatrix::updateAuxiliaries(double** gamma, double*** xsi,  double* Pk, int* T, int n, int* couples, SEXP bidirOptimParams, int** isNaN, int ncores, double effective_zero, int verbose)
+void TransitionMatrix::updateAuxiliaries(double** gamma, double*** xsi,  double* Pk, int* T, int n, int* couples, SEXP bidirOptimParams, int** isNaN, int ncores, double effective_zero, int verbose, int clust, int nsample)
 {
 //effective_zero=-1;
     int a,b;
@@ -201,8 +201,28 @@ void TransitionMatrix::updateAuxiliaries(double** gamma, double*** xsi,  double*
         {
             for(j=0; j<K; j++)
             {
-                this->updateNumerator[i][j] += 1/Pk[n]*numer[i][j];
-                this->updateDenominator[i][j] += 1/Pk[n]*denom[i];
+                if(clust == 1)
+                {
+                    for(int t = 1; t<T[n]; t++)
+                    {
+                        this->updateNumerator[i][j] +=  (gamma[t-1][j]+gamma[t][twin_of[j]]);
+                        
+                    }
+                    int allT = 0;
+                    int n;
+                    for(n = 0; n < nsample; n++)
+                    {
+                        allT += T[n];
+                    }
+                    this->updateDenominator[i][j] = 2*allT - 2;
+                     
+                }
+                else
+                {
+                    this->updateNumerator[i][j] += 1/Pk[n]*numer[i][j];
+                    this->updateDenominator[i][j] += 1/Pk[n]*denom[i]; 
+                }
+               
             }
         }
 
@@ -418,7 +438,7 @@ void TransitionMatrix::update(double effective_zero)
 }
 
 
-void TransitionMatrix::update(int* couples, double effective_zero)
+void TransitionMatrix::update(int* couples, double effective_zero, int clust)
 {
 // effective_zero=-1;
     int a,b;
@@ -478,7 +498,8 @@ void TransitionMatrix::update(int* couples, double effective_zero)
     free(transitions);
 
 }
-
+//Update for Clustering
+//Finish clustering
 
 int getListElementIndex(SEXP list, const char *str)
 {

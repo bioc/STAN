@@ -2,8 +2,8 @@
 % Please edit documentation in R/AllClasses.R
 \docType{class}
 \name{HMMEmission-class}
-\alias{.HMMEmission}
 \alias{HMMEmission-class}
+\alias{.HMMEmission}
 \title{This class is a generic container for different emission functions of Hidden Markov Models.}
 \description{
 This class is a generic container for different emission functions of Hidden Markov Models.
@@ -19,6 +19,7 @@ This class is a generic container for different emission functions of Hidden Mar
 
 \item{\code{nStates}}{The number of states.}
 }}
+
 \examples{
 nStates = 5
 means = list(4,11,4,11,-1)
@@ -27,4 +28,3 @@ transMat = matrix(1/nStates, nrow=nStates, ncol=nStates)
 initProb = rep(1/nStates, nStates)
 HMMEmission(type='Gaussian', parameters=list(mu=means, cov=Sigma), nStates=length(means))
 }
-

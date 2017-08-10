@@ -4,7 +4,7 @@
 \alias{viterbi2Gviz}
 \title{Convert state segmentation for plotting with Gviz}
 \usage{
-viterbi2Gviz(viterbi, chrom, gen, from, to, statecols)
+viterbi2Gviz(viterbi, chrom, gen, from, to, statecols, col = NULL)
 }
 \arguments{
 \item{viterbi}{A list containing the viterbi paths as factors. The output from getViterbi.}
@@ -18,6 +18,8 @@ viterbi2Gviz(viterbi, chrom, gen, from, to, statecols)
 \item{to}{Genomic end poistion.}
 
 \item{statecols}{Named vector with state colors.}
+
+\item{col}{Background color.}
 }
 \value{
 A list containing the viterbi path converted to Gviz objects for plotting.
@@ -25,4 +27,3 @@ A list containing the viterbi path converted to Gviz objects for plotting.
 \description{
 Convert state segmentation for plotting with Gviz
 }
-

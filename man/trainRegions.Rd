@@ -11,4 +11,3 @@ Training regions for the Roadmap Epigenomics data set. Three ENCODE pilot region
 Benedikt Zacher, Julia Ertl, Julien Gagneur, Achim Tresch
 }
 \keyword{data}
-

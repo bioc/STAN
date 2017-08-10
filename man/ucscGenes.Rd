@@ -11,4 +11,3 @@ UCSC gene annotation for the Roadmap Epigenomics data set.
 Benedikt Zacher, Julia Ertl, Julien Gagneur, Achim Tresch
 }
 \keyword{data}
-

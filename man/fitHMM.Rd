@@ -4,7 +4,7 @@
 \alias{fitHMM}
 \title{Fit a Hidden Markov Model}
 \usage{
-fitHMM(obs=list(), hmm, convergence=1e-6, maxIters=1000, dirFlags=list(), emissionProbs=list(), effectiveZero=0, verbose=FALSE, nCores=1, incrementalEM=FALSE, updateTransMat=TRUE, sizeFactors=matrix(1, nrow=length(obs), ncol=ncol(obs[[1]])))
+fitHMM(obs=list(), hmm, convergence=1e-6, maxIters=1000, dirFlags=list(), emissionProbs=list(), effectiveZero=0, verbose=FALSE, nCores=1, incrementalEM=FALSE, updateTransMat=TRUE, sizeFactors=matrix(1, nrow=length(obs), ncol=ncol(obs[[1]])), clustering = FALSE)
 }
 \arguments{
 \item{obs}{The observations. A list of one or more entries containing the observation matrix (\code{numeric}) for the samples (e.g. chromosomes).}
@@ -30,6 +30,8 @@ fitHMM(obs=list(), hmm, convergence=1e-6, maxIters=1000, dirFlags=list(), emissi
 \item{updateTransMat}{Wether transitions should be updated during model learning, default: TRUE.}
 
 \item{sizeFactors}{Library size factors for Emissions PoissonLogNormal or NegativeBinomial as a length(obs) x ncol(obs[[1]]) matrix.}
+
+\item{clustering}{Boolean variable to specify wether it should be fit as an HMM or or bdClustering. Please, use function bdClust when bdClust is prefered.}
 }
 \value{
 A list containing the trace of the log-likelihood during EM learning and the fitted HMM model.
@@ -47,4 +49,3 @@ hmm_fitted = fitHMM(observations, hmm_ex)
 \seealso{
 \code{\linkS4class{HMM}}
 }
-

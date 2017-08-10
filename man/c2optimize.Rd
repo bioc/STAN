@@ -15,4 +15,3 @@ optimized transitions
 \description{
 The function is called from C++ to optimize transitions.
 }
-

@@ -21,4 +21,3 @@ data(trainRegions)
 binData = binarizeData(trainRegions)
 
 }
-

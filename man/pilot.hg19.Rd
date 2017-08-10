@@ -11,4 +11,3 @@ Genomic positions of processed signal for the Roadmap Epigenomics data set. Regi
 Benedikt Zacher, Julia Ertl, Julien Gagneur, Achim Tresch
 }
 \keyword{data}
-

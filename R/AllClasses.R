@@ -237,6 +237,8 @@ getDim = function(type, parameters) {
 #' @param type The type of emission function c('Gaussian').
 #' @param parameters A list containing the the parameters for each state.
 #' @param nStates The number of states.
+#' 
+#' @return HMMEmission
 #' @examples
 #' nStates = 5
 #' means = list(4,11,4,11,-1)
@@ -352,6 +354,7 @@ checkHMMParams = function(initProb, transMat, emission, nStates) {
 #' 
 #' @seealso \code{\linkS4class{HMMEmission}}
 #' 
+#' @return HMM
 #' @examples 
 #' nStates = 5
 #' means = list(4,11,4,11,-1)
@@ -597,6 +600,7 @@ validHMM = function(myHMM) {
 #' @param directedObs An integer indicating which dimensions are directed. Undirected dimensions are 0. Directed observations must be marked as unique integer pairs. For instance c(0,0,0,0,0,1,1,2,2,3,3) contains 5 undirected observations, and thre pairs (one for each direction) of directed observations.
 #' @param dirScore Directionlity score of states of a fitted bdHMM.
 #' 
+#' @return bdHMM
 #' @examples 
 #' nStates = 5
 #' stateNames = c('F1', 'F2', 'R1', 'R2', 'U1')
@@ -958,7 +962,7 @@ LogLik = function(hmm) {
 #' 
 #' @examples 
 #' data(example)
-#' bdhmm_ex = initBdHMM(observations, nStates=3, method="Gaussian", directedObs=0)
+#' bdhmm_ex = initBdHMM(observations, dStates=3, method="Gaussian", directedObs=0)
 #' 
 #' # without flags
 #' bdhmm_fitted_noFlags = fitHMM(observations, bdhmm_ex)
@@ -982,11 +986,14 @@ DirScore = function(bdhmm) {
 
 #' extract parts of HMM
 #'
-#' @name [
-#' @aliases [,HMM,ANY,ANY,ANY-method
-#' @docType methods
-#' @rdname extract-methods
-setMethod("[", signature("HMM"), function(x, i, j, ..., drop="missing") {
+#' @param x A hidden Markov model.
+#' @param i State ids to extract.
+#' @param j Emissions to extract.
+#' @param drop ...
+#' @param ... ...
+#' 
+#' @return extract parts of HMM
+setMethod("[", signature(x="HMM", i="ANY", j="ANY"), function(x, i, j, ..., drop="missing") {
     if (missing(i)) 
         i <- 1:x@nStates
     if (missing(j)) 
@@ -1062,11 +1069,15 @@ setMethod("[", signature("HMM"), function(x, i, j, ..., drop="missing") {
 
 #' extract parts of bdHMM
 #'
-#' @name [
-#' @aliases [,bdHMM,ANY,ANY,ANY,-method
-#' @docType methods
-#' @rdname extract-methods
-setMethod("[", signature("bdHMM"), function(x, i, j, ..., drop="missing") {
+#' @param x A bidirectional hidden Markov model.
+#' @param i State ids to extract.
+#' @param j Emissions to extract.
+#' @param drop ...
+#' @param ... ...
+#' 
+#' @return Extract parts of bdHMM
+#' 
+setMethod("[", signature(x="bdHMM", i="ANY", j="ANY"), function(x, i, j, ..., drop="missing") {
     if (missing(i)) 
         i <- 1:x@nStates
     if (missing(j)) 

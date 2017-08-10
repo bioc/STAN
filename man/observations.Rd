@@ -11,4 +11,3 @@ Observation sequence for the 'example' data.
 Benedikt Zacher, Julia Ertl, Julien Gagneur, Achim Tresch
 }
 \keyword{data}
-

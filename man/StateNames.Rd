@@ -25,4 +25,3 @@ hmm = HMM(stateNames=as.character(1:5), initProb=initProb, transMat=transMat, em
 StateNames(hmm)
 
 }
-

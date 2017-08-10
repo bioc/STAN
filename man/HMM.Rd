@@ -25,6 +25,9 @@ HMM(initProb = numeric(), transMat = matrix(numeric(), ncol = 1, nrow = 1),
 
 \item{LogLik}{Log likelihood of a fitted HMM.}
 }
+\value{
+HMM
+}
 \description{
 This function creates a HMM object.
 }
@@ -40,4 +43,3 @@ HMM(initProb=initProb, transMat=transMat, emission=HMMEmission(type='Gaussian', 
 \seealso{
 \code{\linkS4class{HMMEmission}}
 }
-

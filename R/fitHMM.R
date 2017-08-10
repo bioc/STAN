@@ -16,9 +16,10 @@
 #' @param incrementalEM When TRUE, the incremental EM is used to fit the model, where parameters are updated after each iteration over a single observation sequence.
 #' @param updateTransMat Wether transitions should be updated during model learning, default: TRUE.
 #' @param sizeFactors Library size factors for Emissions PoissonLogNormal or NegativeBinomial as a length(obs) x ncol(obs[[1]]) matrix.
+#' @param clustering Boolean variable to specify wether it should be fit as an HMM or or bdClustering. Please, use function bdClust when bdClust is prefered.
 #' 
 #' @return A list containing the trace of the log-likelihood during EM learning and the fitted HMM model.
-#' @usage fitHMM(obs=list(), hmm, convergence=1e-6, maxIters=1000, dirFlags=list(), emissionProbs=list(), effectiveZero=0, verbose=FALSE, nCores=1, incrementalEM=FALSE, updateTransMat=TRUE, sizeFactors=matrix(1, nrow=length(obs), ncol=ncol(obs[[1]])))
+#' @usage fitHMM(obs=list(), hmm, convergence=1e-6, maxIters=1000, dirFlags=list(), emissionProbs=list(), effectiveZero=0, verbose=FALSE, nCores=1, incrementalEM=FALSE, updateTransMat=TRUE, sizeFactors=matrix(1, nrow=length(obs), ncol=ncol(obs[[1]])), clustering = FALSE)
 #' 
 #' @seealso \code{\linkS4class{HMM}}
 #' @examples 
@@ -28,7 +29,7 @@
 #' hmm_fitted = fitHMM(observations, hmm_ex)
 #'
 #' @export fitHMM
-fitHMM = function(obs=list(), hmm, convergence=1e-6, maxIters=1000, dirFlags=list(), emissionProbs=list(), effectiveZero=0, verbose=FALSE, nCores=1, incrementalEM=FALSE, updateTransMat=TRUE, sizeFactors=matrix(1, nrow=length(obs), ncol=ncol(obs[[1]]))){
+fitHMM = function(obs=list(), hmm, convergence=1e-6, maxIters=1000, dirFlags=list(), emissionProbs=list(), effectiveZero=0, verbose=FALSE, nCores=1, incrementalEM=FALSE, updateTransMat=TRUE, sizeFactors=matrix(1, nrow=length(obs), ncol=ncol(obs[[1]])), clustering = FALSE){
     
     myFile = file.path(tempdir(),paste("STAN.temp.params.", Sys.getpid(), ".rda",sep="") )
     myparams = EmissionParams(hmm)
@@ -231,7 +232,7 @@ fitHMM = function(obs=list(), hmm, convergence=1e-6, maxIters=1000, dirFlags=lis
         emissionParams$mySplit = mySplit
     }
     
-    hmm_out = .Call("RHMMFit", SEXPobs=obs, SEXPpi=initProb, SEXPA=transMat, SEXPemission=emissionParams, SEXPtype=as.character(emission@type), SEXPdim=D, SEXPregularize=as.numeric(0), SEXPk=as.integer(nStates), SEXPmaxIters=as.integer(maxIters), SEXPparallel=as.integer(nCores), SEXPflags=lapply(bdHMM.settings$dirFlags, as.integer), SEXPstate2flag=as.integer(bdHMM.settings$state2flag), SEXPcouples=as.integer(bdHMM.settings$couples), SEXPrevop=as.integer(bdHMM.settings$rev.operation), SEXPverbose=as.integer(verbose), SEXPupdateTransMat=as.integer(updateTransMat), SEXPfixedEmission=emissionProbs, SEXPbidiroptim=bdHMM.settings$bidirOptimParams, SEXPemissionPrior=sizeFactors, SEXPeffectivezero=as.numeric(effectiveZero), SEXPconvergence=as.numeric(convergence), SEXPincrementalEM=as.integer(incrementalEM), PACKAGE="STAN") 
+    hmm_out = .Call("RHMMFit", SEXPobs=obs, SEXPpi=initProb, SEXPA=transMat, SEXPemission=emissionParams, SEXPtype=as.character(emission@type), SEXPdim=D, SEXPregularize=as.numeric(0), SEXPk=as.integer(nStates), SEXPmaxIters=as.integer(maxIters), SEXPparallel=as.integer(nCores), SEXPflags=lapply(bdHMM.settings$dirFlags, as.integer), SEXPstate2flag=as.integer(bdHMM.settings$state2flag), SEXPcouples=as.integer(bdHMM.settings$couples), SEXPrevop=as.integer(bdHMM.settings$rev.operation), SEXPverbose=as.integer(verbose), SEXPupdateTransMat=as.integer(updateTransMat), SEXPfixedEmission=emissionProbs, SEXPbidiroptim=bdHMM.settings$bidirOptimParams, SEXPemissionPrior=sizeFactors, SEXPeffectivezero=as.numeric(effectiveZero), SEXPconvergence=as.numeric(convergence), SEXPincrementalEM=as.integer(incrementalEM), SEXPclustering = as.integer(clustering), PACKAGE="STAN") 
     
     if(class(hmm) == "bdHMM") {
         hmm@dirScore = hmm_out$dirScore 

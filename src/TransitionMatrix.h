@@ -34,10 +34,10 @@ class TransitionMatrix
         double** getTransMat();
         int getK();
         void update(double effective_zero);
-        void update(int* couples, double effective_zero);
+        void update(int* couples, double effective_zero, int clust);
         void update(SEXP bidirOptimParams);
         void updateAuxiliaries(double** gamma, double*** xsi,  double* Pk, int* T, int n, int** isNaN, int ncores, double effective_zero, int verbose);
-        void updateAuxiliaries(double** gamma, double*** xsi,  double* Pk, int* T, int n, int* couples, SEXP bidirOptimParams, int** isNaN, int ncores, double effective_zero, int verbose);
+        void updateAuxiliaries(double** gamma, double*** xsi,  double* Pk, int* T, int n, int* couples, SEXP bidirOptimParams, int** isNaN, int ncores, double effective_zero, int verbose, int clust, int nsample);
         void finalize();
         SEXP callRsolnp(SEXP pars);
 };

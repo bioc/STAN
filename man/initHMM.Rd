@@ -29,4 +29,3 @@ data(example)
 hmm_ex = initHMM(observations, nStates=3, method="Gaussian") 
 
 }
-

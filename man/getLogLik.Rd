@@ -39,4 +39,3 @@ loglik
 \seealso{
 \code{\linkS4class{HMM}}
 }
-

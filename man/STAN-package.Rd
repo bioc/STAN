@@ -7,11 +7,10 @@
 \description{
 The genomic STate ANnotation package
 }
-\author{
-Benedikt Zacher, Julia Ertl, Julien Gagneur, Achim Tresch
-}
 \references{
 Zacher, B. and Lidschreiber, M. and Cramer, P. and Gagneur, J. and Tresch, A. (2014): Annotation of genomics data using bidirectional hidden Markov models unveils variations in Pol II transcription cycle Mol. Syst. Biol. 10:768
 }
+\author{
+Benedikt Zacher, Julia Ertl, Julien Gagneur, Achim Tresch
+}
 \keyword{package}
-

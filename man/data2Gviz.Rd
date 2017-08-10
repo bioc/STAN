@@ -23,4 +23,3 @@ A list containing the data tracks converted to Gviz objects for plotting.
 \description{
 Convert data for plotting with Gviz
 }
-

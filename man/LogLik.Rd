@@ -22,4 +22,3 @@ hmm_fitted = fitHMM(observations, hmm_ex)
 LogLik(hmm_fitted)
 
 }
-
