@@ -78,7 +78,12 @@ initHMM = function(obs, nStates, method, sizeFactors = matrix(1, nrow = length(o
             nStates = nStates)
         myEmissionsNB = initNB(km, obs)[1]
         
+        # print(myEmissionsNB)
+        # print("-----------------------")
+        # print( multiNomEmission)
+        # print("-----------------------")
         myEmissions = c(myEmissionsNB, multiNomEmission)
+        # print(myEmissions)
     }
     if (method == "Bernoulli") {
         state2ind = tapply(1:length(km$cluster), INDEX = km$cluster, identity)
@@ -147,7 +152,7 @@ clusterMat = function(myMat, nStates, method) {
 		myBckg = which(apply(myMat, 1, function(x) all(x == 0)))
         mySignal = setdiff(1:nrow(myMat), myBckg)
 		
-        suppressWarnings(km <- kmeans(log(myMat[mySignal, , drop=FALSE] + 1), centers = nStates - 
+        suppressWarnings(km <- kmeans(log(myMat[mySignal, drop=FALSE] + 1), centers = nStates - 
             1, iter.max = 1000, nstart = 10))
         
         km$centers = matrix(NA, nrow = nStates, ncol = ncol(myMat))

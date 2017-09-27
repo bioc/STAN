@@ -80,8 +80,9 @@ checkParameters = function(type, parameters, nStates) {
             stop(paste("Dimensionality of Poisson probabilities unequal to one for states: ", 
                 which(!myLens), "\n", sep = ""))
         myLambda = unlist(parameters$lambda)
+        print(paste("any na in labdas:", is.na(myLambda)))
         if (!all(myLambda > 0)) 
-            stop("Poisson means are not > 0.")
+            stop("Poisson means are not > 0. Line 83")
         
         val = TRUE
     } else if (type == "PoissonLogNormal") {
@@ -111,6 +112,7 @@ checkParameters = function(type, parameters, nStates) {
             stop(paste("Dimensionality of NegativeBinomial probabilities unequal to one for states: ", 
                 which(!myLens), "\n", sep = ""))
         myLens = sapply(parameters$size, function(x) length(x) == 1)
+        # print(myLens)
         if (!all(myLens)) 
             stop(paste("Dimensionality of NegativeBinomial probabilities unequal to one for states: ", 
                 which(!myLens), "\n", sep = ""))

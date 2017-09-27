@@ -634,6 +634,7 @@ double ParamContainerEmissions::getMuNB()
 
 double ParamContainerEmissions::getSizeNB()
 {
+    // Rprintf("getSize");
     return this->size_nb;
 }
 

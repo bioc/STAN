@@ -44,7 +44,7 @@ NegativeBinomial::~NegativeBinomial()
 
 double NegativeBinomial::calcEmissionProbability(double *obs, int isna, int currN)
 {
-
+    // Rprintf("inside calcEmissionProb");
     int i, obs_i, D;
     double probability = 1;
     int* myStart = this->emissionParams->getStart();
@@ -125,8 +125,9 @@ void NegativeBinomial::updateAuxiliariesCoupledRevop(double*** observations,
 double** gamma, double* Pk, int* T, int n, int i, int statecouple,
 int* state2flag, int* revop, int** isNaN)
 {
-
-/*int t, d, l, obs_d;
+    /*
+printf("line 128");
+int t, d, l, obs_d;
 double numer, denom;
 
 //printf(" GAUSSIAN s=%d, c=%d\n", i, statecouple);
@@ -158,8 +159,8 @@ this->updateDenominatorMU[d] += 1 / Pk[n] * denom;
 for (t = 0; t < T[n]; t++) {
 this->emissionParams->setGammaAux(gamma[t][i], n, t);
 }
-*/
-/*int t;
+
+int t;
     for (t = 0; t < T[n]; t++) {
         this->emissionParams->setGammaAux(gamma[t][i], n, t);
     }*/
@@ -172,7 +173,7 @@ double** revGammaAux, int** isNaN, SEXP emissionPrior, int currN, int ncores)
 {
     int n;
     SEXP myObs, pars, myGammas, myd;
-
+    // Rprintf("I am here");
     int d;
 /*		for (d = 0; d < this->emissionParams->getD(); d++) {
             printf("%f ", this->updateNumeratorMU[d] / this->updateDenominatorMU[d]);

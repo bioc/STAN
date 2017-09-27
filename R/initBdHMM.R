@@ -49,8 +49,8 @@ initBdHMM = function(obs, dStates = 0, uStates = 0, method, dirFlags = NULL, dir
             for (k in 1:length(obs)) {
                 obs[[k]] = obs[[k]][apply(obs[[k]], 1, function(x) all(!is.na(x))), 
                   ]
-                obs[[k]][, myDirCols[[i]]] = t(apply(obs[[k]][, myDirCols[[i]]], 
-                  1, sort, decreasing = TRUE))
+                # obs[[k]][, myDirCols[[i]]] = t(apply(obs[[k]][, myDirCols[[i]]], 
+                  # 1, sort, decreasing = TRUE))
             }
         }
     } ## Makes always one column of the observation matrices to have the higher number when strand-specific data is included
@@ -103,8 +103,7 @@ initBdHMM = function(obs, dStates = 0, uStates = 0, method, dirFlags = NULL, dir
     }
     if (method == "ZINegativeBinomial") {
         myEmissions = initNB(km, obs, sizeFactor = sizeFactors, zeroInflated = TRUE, 
-            stateLabels = c(paste("F", 1:(nStates), sep = ""), paste("R", 
-                1:(nStates), sep = "")), directedObs = directedObs)
+                             stateLabels = stateLabels, directedObs = directedObs, indexStates = indexStates)
     }
     if (method == "PoissonLogNormal") {
 #         print(paste("I enter in PoissonLogNormal"))
@@ -123,12 +122,15 @@ initBdHMM = function(obs, dStates = 0, uStates = 0, method, dirFlags = NULL, dir
     } 
     
     if (method == "Gaussian") {
-#         print(km)
+        # print(km)
+        # print(myDirCols)
         if(length(myDirCols) > 0){
             means_Init = as.list(as.data.frame(t(km$centers[order(km$centers[,myDirCols[[1]][1]], decreasing = TRUE ),])))
+            print(means_Init)
         }else{
             means_Init = as.list(as.data.frame(t(km$centers)))
         }
+        
         
         covs_Init = lapply(1:length(means_Init), function(x) matrix(cov(myMat), ncol=ncol(myMat)))
       
@@ -140,15 +142,30 @@ initBdHMM = function(obs, dStates = 0, uStates = 0, method, dirFlags = NULL, dir
             sharedCov = sharedCov), nStates = length(stateLabels)))
     }
     if (method == "IndependentGaussian") {
-        state2ind = tapply(1:length(km$cluster), INDEX = km$cluster, identity)
-        means_Init = lapply(state2ind, function(x) apply(myMat[x,, drop=FALSE], 2, 
+        state2ind = tapply(1:length(km$cluster), INDEX = km$cluster, mean)
+        means_Init = lapply(state2ind, function(x) apply(myMat[x,, drop=FALSE], 2,
             mean))
+        # print(means_Init)
+        means_Init <- do.call(rbind, means_Init)
+        # print(means_Init)
+        
+        if(length(myDirCols) > 0){
+            means_Init =means_Init[order(means_Init[,myDirCols[[1]][1]], decreasing = TRUE ),]
+        }
+        # print(means_Init)
+        
+        means_Init = split(means_Init, rep(1:nrow(means_Init), each = ncol(means_Init)))
+        
+        # print(means_Init)
+        
         covs_Init = lapply(1:length(means_Init), function(x) matrix(cov(myMat), ncol=ncol(myMat)))
+        
+        
         Rmeans_Init <- list()
         Rcovs_Init <- list ()
-        for (i in 1:dSates) {
-            Rmeans_Init[[i]] = means_Init[[(i - length(indexStates[grep("D", indexStates)]))]][rev.operation]
-            Rcovs_Init[[i]] = covs_Init[[(i - length(indexStates[grep("D", indexStates)]))]][rev.operation, 
+        for (i in 1:dStates) {
+            Rmeans_Init[[i]] = means_Init[[i]][rev.operation]
+            Rcovs_Init[[i]] = covs_Init[[i]][rev.operation, 
                 rev.operation]
         }
         means_Init <- c(means_Init[grep("D", indexStates)], Rmeans_Init, means_Init[grep("U", indexStates)])
@@ -157,7 +174,7 @@ initBdHMM = function(obs, dStates = 0, uStates = 0, method, dirFlags = NULL, dir
         for (i in 1:ncol(obs[[1]])) {
             myEmissions[[i]] = HMMEmission(type = "Gaussian", parameters = list(mu = lapply(means_Init, 
                 function(x) x[i]), cov = lapply(covs_Init, function(x) matrix(var(as.vector(obs[[1]])), 
-                ncol = 1)), sharedCov = sharedCov), nStates = nStates )
+                ncol = 1)), sharedCov = sharedCov), nStates = length(stateLabels) )
         }
     }
     if (method == "Bernoulli") {
@@ -165,18 +182,75 @@ initBdHMM = function(obs, dStates = 0, uStates = 0, method, dirFlags = NULL, dir
         means_Init = lapply(state2ind, function(x) apply(myMat[x,, drop=FALSE], 2, 
             mean))
         
+        means_Init = c(means_Init[grep("D", indexStates)], means_Init[grep("D", indexStates)], means_Init[grep("U", indexStates)])
+        names(means_Init) = stateLabels
+        
+        for( i in grep("R", stateLabels)){
+            means_Init[[i]] <- means_Init[[i]][rev.operation]
+        }
+        
         myEmissions = list()
         
         for (i in 1:ncol(obs[[1]])) {
             myEmissions[[i]] = HMMEmission(type = "Bernoulli", parameters = list(p = lapply(means_Init, 
-                function(x) x[i])), nStates = nStates)
+                function(x) x[i])), nStates = length(stateLabels))
         }
+    }
+    
+    if (method == "Poisson") {
+        state2ind = tapply(1:length(km$cluster), INDEX = km$cluster, identity)
+        means_Init = lapply(state2ind, function(x) apply(myMat[x, 1:ncol(myMat), drop=FALSE], 2, 
+                                                         mean))
+        
+        for(s in 1:length(means_Init)){
+            for(v in 1:length(means_Init[[s]])){
+                if(means_Init[[s]][v] == 0 ) means_Init[[s]][v] = 1e-6
+            }
+        }
+        means_Init = c(means_Init[grep("D", indexStates)], means_Init[grep("D", indexStates)], means_Init[grep("U", indexStates)])
+        
+        names(means_Init) = stateLabels
+        
+        for( i in grep("R", stateLabels)){
+            means_Init[[i]] <- means_Init[[i]][rev.operation]
+        }
+        
+        myEmissions = list()
+        
+        for (i in 1:ncol(obs[[1]])) {
+            myEmissions[[i]] = HMMEmission(type = "Poisson", parameters = list(lambda = lapply(means_Init, 
+                                                                                               function(x) x[i])), nStates = length(stateLabels))
+        }
+    }
+    
+    if (method == "NegativeMultinomial") {
+        
+        state2ind = tapply(1:length(km$cluster), INDEX = km$cluster, identity)
+        means_Init = do.call("rbind", lapply(state2ind, function(x) apply(myMat[x, 1:ncol(myMat), drop=FALSE], 2, mean)))
+        
+        means_Init = rbind(means_Init[grep("D", indexStates),], means_Init[grep("D", indexStates),rev.operation], means_Init[grep("U", indexStates),])
+        
+        multiNomInit = lapply(1:nrow(means_Init), function(x) means_Init[x, 
+                                                                         2:ncol(means_Init)]/sum(means_Init[x, 2:ncol(means_Init)]))
+        multiNomEmission = HMMEmission(type = "Multinomial", parameters = list(p = multiNomInit), 
+                                       nStates = length(stateLabels))
+        myEmissionsNB = initNB(km, obs, sizeFactor = sizeFactors, stateLabels = stateLabels, 
+                             directedObs = directedObs, indexStates = indexStates)[1]
+        
+        # print(myEmissionsNB)
+        # print("-----------------------")
+        # print( multiNomEmission)
+        # print("-----------------------")
+        myEmissions = c(myEmissionsNB, multiNomEmission)
+        # print(myEmissions)
     }
     
     
     nStates = length(stateLabels)
+    
     initProb = rep(1/nStates, nStates)
     transMat = matrix(1/nStates, nrow = nStates, ncol = nStates)
+    # cat("TransMat:", "\n", transMat, "\n", "My Emissions:", "\n", myEmissions)
     bdhmm = bdHMM(initProb = initProb, transMat = transMat, emission = myEmissions, 
         nStates = nStates, stateNames = stateLabels, status = "initial", transitionsOptim = "analytical", 
         directedObs = directedObs, dimNames = colnames(obs[[1]]))

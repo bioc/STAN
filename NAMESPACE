@@ -40,5 +40,6 @@ import(S4Vectors)
 import(GenomeInfoDb)
 importFrom(parallel, mclapply)
 
+
 useDynLib(STAN)
 

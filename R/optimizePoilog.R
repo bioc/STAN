@@ -58,8 +58,8 @@ initPoiLog = function(km, signalbychrom, celltypes = NULL, stateLabels = NULL,
                 parameters = currParameters, nStates = nStates)
         }
     } else {
-        if (!length(stateLabels) == 2 * nStates) 
-            stop("Length if object stateLabels must be 2*nStates")
+#         if (!length(stateLabels) == 2 * nStates) 
+#             stop("Length if object stateLabels must be 2*nStates")
         nStates = length(stateLabels)
         rev.operation = c()
         for (i in 1:length(directedObs)) {

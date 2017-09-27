@@ -4,11 +4,15 @@
 #' @keywords internal
 #' @noRd
 initNB = function(km, signalbychrom, celltypes = NULL, stateLabels = NULL, 
-    directedObs = NULL, sizeFactor = NULL, zeroInflated = FALSE, indexStates = NULL) {
+                  directedObs = NULL, sizeFactor = NULL, zeroInflated = FALSE, indexStates = NULL) {
     celltypes = list(CD4T = 1)
     myAvg = apply(t(sapply(celltypes, function(x) apply(do.call("rbind", 
-        signalbychrom[x]), 2, sum))), 2, mean)
-    
+                                                                signalbychrom[x]), 2, sum))), 2, mean)
+    # print(directedObs)
+    myPlus = FALSE
+    if (!all(directedObs == 0)) myPlus = which(directedObs == 1)[1]
+    print(myPlus)
+    # print(myPlus)
     if (is.null(celltypes)) {
         celltypes = list(1:length(signalbychrom))
     }
@@ -16,7 +20,7 @@ initNB = function(km, signalbychrom, celltypes = NULL, stateLabels = NULL,
     nStates = nrow(km$centers)
     myD = ncol(km$centers)
     myMat = do.call("rbind", signalbychrom)
-    
+     
     if (is.null(sizeFactor)) {
         sizeFactor = matrix(1, ncol = myD, nrow = length(signalbychrom))
     }
@@ -28,6 +32,16 @@ initNB = function(km, signalbychrom, celltypes = NULL, stateLabels = NULL,
     cl2init = list()
     initMeans_humanCD4T = list()
     initCovs_humanCD4T = list()
+    # print(names(cl2ind))
+    if(myPlus){
+        myOrder <- order(sapply(cl2ind, function(x) mean(myMat[x, myPlus])), decreasing = T)
+        cl2ind = cl2ind[myOrder]
+        
+    }
+    names(cl2ind) = 1:length(cl2ind)
+    # print(names(cl2ind))
+    
+    
     for (i in 1:length(cl2ind)) {
         # print(i)
         cl2pos[[i]] = cl2ind[[i]]
@@ -36,7 +50,7 @@ initNB = function(km, signalbychrom, celltypes = NULL, stateLabels = NULL,
             cl2val[[i]] = matrix(cl2val[[i]], ncol = 1)
         }
         mySplit = list(lapply(1:ncol(cl2val[[i]]), function(d) as.list(tapply(1:nrow(cl2val[[i]]), 
-            INDEX = cl2val[[i]][, d], identity))))
+                                                                              INDEX = cl2val[[i]][, d], identity))))
         # mySplit = list(lapply(1:ncol(cl2val[[i]]), function(d)
         # as.list(tapply(1:nrow(cl2val[[i]]), INDEX=cl2val[[i]][,d],
         # identity)))) print(str(mySplit)) cl2init[[i]] =
@@ -46,14 +60,14 @@ initNB = function(km, signalbychrom, celltypes = NULL, stateLabels = NULL,
         # sizeFactor=mySF[,x], uniqueCountSplit=mySplit)))
         if (zeroInflated) {
             cl2init[[i]] = sapply(1:ncol(cl2val[[i]]), function(x) optimizeNBInit(list(mu = mean(cl2val[[i]][, 
-                x]), size = mean(cl2val[[i]][, x]), pi = max(1e-06, length(which(cl2val[[i]][, 
-                x] == 0))/length(cl2val[[i]][, x])), gamma = rep(1, nrow(myMat)), 
-                sizeFactor = sizeFactor, uniqueCountSplit = mySplit, d = x)))
+                                                                                                             x]), size = mean(cl2val[[i]][, x]), pi = max(1e-06, length(which(cl2val[[i]][, 
+                                                                                                                                                                                          x] == 0))/length(cl2val[[i]][, x])), gamma = rep(1, nrow(myMat)), 
+                                                                                       sizeFactor = sizeFactor, uniqueCountSplit = mySplit, d = x)))
         } else {
             cl2init[[i]] = sapply(1:ncol(cl2val[[i]]), function(x) optimizeNBInit(list(mu = mean(cl2val[[i]][, 
-                x]), size = mean(cl2val[[i]][, x]), pi = 0, gamma = rep(1, 
-                nrow(myMat)), sizeFactor = sizeFactor, uniqueCountSplit = mySplit, 
-                d = x)))
+                                                                                                             x]), size = mean(cl2val[[i]][, x]), pi = 0, gamma = rep(1, 
+                                                                                                                                                                     nrow(myMat)), sizeFactor = sizeFactor, uniqueCountSplit = mySplit, 
+                                                                                       d = x)))
         }
         # print(cl2init[[i]])
     }
@@ -64,17 +78,17 @@ initNB = function(km, signalbychrom, celltypes = NULL, stateLabels = NULL,
     if (is.null(stateLabels)) {
         for (currDim in 1:myD) {
             currParameters = list(mu = lapply(1:nStates, function(state) cl2init[[state]][1, 
-                currDim]), size = lapply(1:nStates, function(state) cl2init[[state]][2, 
-                currDim]), sizeFactor = lapply(1:nStates, function(x) sizeFactor[, 
-                currDim]), pi = lapply(1:nStates, function(state) cl2init[[state]][3, 
-                currDim]))
+                                                                                          currDim]), size = lapply(1:nStates, function(state) cl2init[[state]][2, 
+                                                                                                                                                               currDim]), sizeFactor = lapply(1:nStates, function(x) sizeFactor[, 
+                                                                                                                                                                                                                                currDim]), pi = lapply(1:nStates, function(state) cl2init[[state]][3, 
+                                                                                                                                                                                                                                                                                                   currDim]))
             myEmissions[[currDim]] = HMMEmission(type = "NegativeBinomial", 
-                parameters = currParameters, nStates = nStates)
+                                                 parameters = currParameters, nStates = nStates)
         }
     } else {
-        if (!length(stateLabels) == 2 * nStates) 
-            stop("Length if object stateLabels must be 2*nStates")
-        
+        #if (!length(stateLabels) == 2 * nStates) 
+        # stop("Length if object stateLabels must be 2*nStates")
+        #       #nt(paste("line 92; stateLabels: ", stateLabels))
         nStates = length(stateLabels)
         rev.operation = c()
         for (i in 1:length(directedObs)) {
@@ -86,17 +100,19 @@ initNB = function(km, signalbychrom, celltypes = NULL, stateLabels = NULL,
                 rev.operation[i] = myPair
             }
         }
-        cl2init = cl2init[c(rep(grep("F", stateLabels), 2), grep("U", stateLabels))]
+        #       #nt(paste("line 104: ", cl2init))
+        cl2init = cl2init[c(rep(grep("D", indexStates), 2), grep("U", indexStates))]
+        #       #nt(paste("line 106: ",cl2init))
         myR = grep("R", stateLabels)
         cl2init[myR] = lapply(cl2init[myR], function(x) x[, rev.operation])
         for (currDim in 1:myD) {
             currParameters = list(mu = lapply(1:nStates, function(state) cl2init[[state]][1, 
-                currDim]), size = lapply(1:nStates, function(state) cl2init[[state]][2, 
-                currDim]), sizeFactor = lapply(1:nStates, function(x) sizeFactor[, 
-                currDim]), pi = lapply(1:nStates, function(state) cl2init[[state]][3, 
-                currDim]))
+                                                                                          currDim]), size = lapply(1:nStates, function(state) cl2init[[state]][2, 
+                                                                                                                                                               currDim]), sizeFactor = lapply(1:nStates, function(x) sizeFactor[, 
+                                                                                                                                                                                                                                currDim]), pi = lapply(1:nStates, function(state) cl2init[[state]][3, 
+                                                                                                                                                                                                                                                                                                   currDim]))
             myEmissions[[currDim]] = HMMEmission(type = "NegativeBinomial", 
-                parameters = currParameters, nStates = nStates)
+                                                 parameters = currParameters, nStates = nStates)
         }
     }
     
@@ -111,9 +127,10 @@ initNB = function(km, signalbychrom, celltypes = NULL, stateLabels = NULL,
 optimizeNB = function(myPars) {
     # print(myPars$sizeFactor)
     mySplit = myPars$uniqueCountSplit
+    # print(myPars$gamma)
     out = NULL
     myFile = file.path(tempdir(), paste("STAN.temp.params.", Sys.getpid(), 
-        ".rda", sep = ""))
+                                        ".rda", sep = ""))
     if (myPars$d != 1) {
         load(myFile)
     } else {
@@ -128,32 +145,32 @@ optimizeNB = function(myPars) {
                 gammaSums[[i]] = unlist(gammaSums[[i]])
                 # print(i) print(currD) bdHMM
                 if (i > nrow(myPars$sizeFactor)) {
-                  sizeFactors[[i]] = rep(myPars$sizeFactor[i/2, currD], 
-                    length(gammaSums[[i]]))
+                    sizeFactors[[i]] = rep(myPars$sizeFactor[i/2, currD], 
+                                           length(gammaSums[[i]]))
                 } else {
-                  sizeFactors[[i]] = rep(myPars$sizeFactor[i, currD], length(gammaSums[[i]]))
+                    sizeFactors[[i]] = rep(myPars$sizeFactor[i, currD], length(gammaSums[[i]]))
                 }
                 
             }
             gammaSums = unlist(gammaSums)
             myUniques = unlist(myUniques)
             sizeFactors = unlist(sizeFactors)
-            
+            # print(gammaSums)
             pos2fac = tapply(1:length(sizeFactors), INDEX = sizeFactors, 
-                identity)
+                             identity)
             fac2unique = lapply(pos2fac, function(x) myUniques[x])
             fac2gamma = lapply(pos2fac, function(x) gammaSums[x])
             pos2fac = tapply(1:length(sizeFactors), INDEX = sizeFactors, 
-                identity)
+                             identity)
             sf_collapsed = list()
             gamma_collapsed = list()
             unique_collapsed = list()
             for (i in 1:length(pos2fac)) {
                 gamma_collapsed[[i]] = tapply(fac2gamma[[i]], INDEX = fac2unique[[i]], 
-                  sum)
+                                              sum)
                 unique_collapsed[[i]] = as.numeric(names(gamma_collapsed[[i]]))
                 sf_collapsed[[i]] = rep(as.numeric(names(pos2fac)[i]), 
-                  length(gamma_collapsed[[i]]))
+                                        length(gamma_collapsed[[i]]))
             }
             gammaSums = unlist(gamma_collapsed)
             myUniques = unlist(unique_collapsed)
@@ -166,31 +183,38 @@ optimizeNB = function(myPars) {
             }
             
             initPars = c(myparams$mu[myPars$currstate, currD], myparams$size[myPars$currstate, 
-                currD], currPi)
+                                                                             currD], currPi)
             # initPars = c(sum(gammaSums*(myUniques))/sum(gammaSums),
             # sum(gammaSums*(myUniques))/sum(gammaSums),
             # currPi)#max(c(log(sum(gammaSums*myUniques)/sum(gammaSums))))
             # print(initPars) before = myQPoiLog(par=initPars,myGammas=gammaSums,
             # sizeFactor=sizeFactors, x=myUniques) print(initPars)
-            out = optim(par = initPars, fn = myQNBinom, zeroInflation = ifelse(initPars[3] == 
-                Inf, FALSE, TRUE), myGammas = gammaSums, sizeFactor = sizeFactors, 
-                x = myUniques, lower = c(1e-06, 1e-06, 1e-06), upper = c(1e+06, 
-                  1e+06, 1), method = "L-BFGS-B")$par
+      
+            out = optim(par = initPars, fn = myQNBinom, zeroInflation = ifelse(initPars[3] ==
+                                                                                   Inf, FALSE, TRUE), myGammas = gammaSums, sizeFactor = sizeFactors,
+                        x = myUniques, lower = c(1e-06, 1e-06, 1e-06), upper = c(1e+06,
+                                                                                 1e+06, 1), method = "L-BFGS-B")
+            out = out$par
+            
             if (currPi == Inf) {
                 out[3] = 0
             }
             out
         }, mc.cores = min(c(myPars$ncores, length(mySplit[[1]]))))
         # print(unlist(sapply(out, function(x) x[1])))
-        myparams$mu[myPars$currstate, ] = unlist(sapply(out, function(x) x[1]))
+        # browser()
+        # print(out)
+        myparams$mu[myPars$currstate, 1:length(out)] = unlist(sapply(out, function(x) x[1]))
         myparams$size[myPars$currstate, ] = unlist(sapply(out, function(x) x[2]))
         myparams$pi[myPars$currstate, ] = unlist(sapply(out, function(x) x[3]))
         # print(myparams)
         save(myparams, file = myFile)
     }
     # print(myparams$mu)
+    # print(paste("D: ", myPars$d))
+    # print(paste("S: ", myPars$currstate))
     out = c(myparams$mu[myPars$currstate, myPars$d], myparams$size[myPars$currstate, 
-        myPars$d], myparams$pi[myPars$currstate, myPars$d])
+                                                                   myPars$d], myparams$pi[myPars$currstate, myPars$d])
     # print(out) out = optim(par=c(myPars$mu, myPars$sigma), fn=myQPoiLog,
     # myGammas=gammaSums, sizeFactor=sizeFactors, x=myUniques,
     # method='BFGS')$par#, control=list(reltol=1e-8, maxit=10000))$par
@@ -237,7 +261,7 @@ optimizeNBInit = function(myPars) {
     unique_collapsed = list()
     for (i in 1:length(pos2fac)) {
         gamma_collapsed[[i]] = tapply(fac2gamma[[i]], INDEX = fac2unique[[i]], 
-            sum)
+                                      sum)
         unique_collapsed[[i]] = as.numeric(names(gamma_collapsed[[i]]))
         sf_collapsed[[i]] = rep(as.numeric(names(pos2fac)[i]), length(gamma_collapsed[[i]]))
     }
@@ -248,11 +272,12 @@ optimizeNBInit = function(myPars) {
     if (myPars$pi == 0) {
         myPars$pi = Inf
     }
+  #nt("I am line 257")
+    out = optim(par = c(myPars$mu, myPars$size, myPars$pi), fn = myQNBinom,
+                zeroInflation = ifelse(myPars$pi == Inf, FALSE, TRUE), myGammas = gammaSums,
+                sizeFactor = sizeFactors, x = myUniques, lower = c(1e-06, 1e-06,
+                                                                   1e-06), upper = c(1e+06, 1e+06, 1), method = "L-BFGS-B")$par
     
-    out = optim(par = c(myPars$mu, myPars$size, myPars$pi), fn = myQNBinom, 
-        zeroInflation = ifelse(myPars$pi == Inf, FALSE, TRUE), myGammas = gammaSums, 
-        sizeFactor = sizeFactors, x = myUniques, lower = c(1e-06, 1e-06, 
-            1e-06), upper = c(1e+06, 1e+06, 1), method = "L-BFGS-B")$par
     if (myPars$pi == Inf) {
         out[3] = 0
     }
@@ -266,20 +291,27 @@ optimizeNBInit = function(myPars) {
 #' @keywords internal
 #' @noRd
 myQNBinom <- function(x, par, myGammas = rep(1, length(x)), sizeFactor = 1, 
-    zeroInflation = FALSE) {
+                      zeroInflation = FALSE) {
+    # browser()
     mynegbinom = dnbinom(x, mu = par[1]/sizeFactor, size = par[2])
+    # print(length(mynegbinom ))
+    # if(par[1] <= 1e-6)   #nt(par[1])
+    # print(currD)
+    # print(par)
+    
+          
     if (zeroInflation) {
         myZeros = which(x == 0)
         notZeros = which(x != 0)
         mynegbinom[myZeros] = log(par[3] + ((1 - par[3]) * mynegbinom[myZeros]) + 
-            1e-300)
+                                      1e-300)
         mynegbinom[notZeros] = log(((1 - par[3]) * mynegbinom[notZeros]) + 
-            1e-300)
+                                       1e-300)
     } else {
         mynegbinom = log(mynegbinom + 1e-300)
     }
-    
-    myval = -sum(myGammas * mynegbinom)
+    # print(-sum(myGammas * mynegbinom,na.rm = T))
+    myval = -sum(myGammas * mynegbinom, na.rm = TRUE)
     myval
 }
  

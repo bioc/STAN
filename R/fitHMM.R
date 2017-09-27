@@ -167,6 +167,7 @@ fitHMM = function(obs=list(), hmm, convergence=1e-6, maxIters=1000, dirFlags=lis
     
     mySplit = list()
     if(emission@type == "JointlyIndependent") {
+        print("I am in JointlyInd")
         if(length(observationEmissionType) == 0) stop("Please specify observationEmissionType to ensure that JointlyIndependent emission match observation data types!")
         if(length(observationEmissionType) != dim(obs[[1]])[2]) stop("Length of observationDataType does not match number of observation cols (data tracks)!")
         emissionTypes = unlist(sapply(emission@parameters$emissions, function(x) rep(x@type, x@dim)))
@@ -222,8 +223,8 @@ fitHMM = function(obs=list(), hmm, convergence=1e-6, maxIters=1000, dirFlags=lis
                 
             #   reorderObs = unlist(lapply(1:length(obs), function(x) c(x, x+length(obs))))
             #   myCurrSplit = myCurrSplit[reorderObs]
-                
-            #   print(length(myCurrSplit))
+                # browser()
+                print(length(myCurrSplit))
                 mySplit[[currType]] = list(countSplit=myCurrSplit, optimFct=ifelse(currType=="PoissonLogNormal",optimizePoiLog,optimizeNB))
             }
             
@@ -231,7 +232,7 @@ fitHMM = function(obs=list(), hmm, convergence=1e-6, maxIters=1000, dirFlags=lis
         
         emissionParams$mySplit = mySplit
     }
-    
+    # trace("myQNBinom", quote(if(any(is.nan(myGammas))) {recover()}), at = 3, print = F)
     hmm_out = .Call("RHMMFit", SEXPobs=obs, SEXPpi=initProb, SEXPA=transMat, SEXPemission=emissionParams, SEXPtype=as.character(emission@type), SEXPdim=D, SEXPregularize=as.numeric(0), SEXPk=as.integer(nStates), SEXPmaxIters=as.integer(maxIters), SEXPparallel=as.integer(nCores), SEXPflags=lapply(bdHMM.settings$dirFlags, as.integer), SEXPstate2flag=as.integer(bdHMM.settings$state2flag), SEXPcouples=as.integer(bdHMM.settings$couples), SEXPrevop=as.integer(bdHMM.settings$rev.operation), SEXPverbose=as.integer(verbose), SEXPupdateTransMat=as.integer(updateTransMat), SEXPfixedEmission=emissionProbs, SEXPbidiroptim=bdHMM.settings$bidirOptimParams, SEXPemissionPrior=sizeFactors, SEXPeffectivezero=as.numeric(effectiveZero), SEXPconvergence=as.numeric(convergence), SEXPincrementalEM=as.integer(incrementalEM), SEXPclustering = as.integer(clustering), PACKAGE="STAN") 
     
     if(class(hmm) == "bdHMM") {
@@ -246,6 +247,7 @@ fitHMM = function(obs=list(), hmm, convergence=1e-6, maxIters=1000, dirFlags=lis
     if(length(emissionProbs) == 0) {
         hmm@emission = list(reformatEmissionAfterFitting(hmm_out$emission, emission@type, D, nStates))#hmm_out$emission#
     }
+    print(hmm@emission)
     if(! is.null(bdHMM.settings$rev.operation)) {
         bdHMM.settings$rev.operation = bdHMM.settings$rev.operation + 1
         hmm@emission[[1]]@parameters = emissionRevOp(hmm@emission[[1]]@parameters, emission@type, bdHMM.settings, nStates, hmm@directedObs, colnames(obs[[1]]), hmm@stateNames)
