@@ -216,7 +216,7 @@ optimizePoiLog = function(myPars) {
             
         }, mc.cores = min(c(myPars$ncores, length(mySplit[[1]]))))
         # print(unlist(sapply(out, function(x) x[1])))
-        myparams$mu[myPars$currstate, ] = unlist(sapply(out, function(x) x[1]))
+        myparams$mu[myPars$currstate, 1:length(out)] = unlist(sapply(out, function(x) x[1]))
         myparams$sigma[myPars$currstate, ] = unlist(sapply(out, function(x) x[2]))
         # print(myparams)
         save(myparams, file = myFile)
