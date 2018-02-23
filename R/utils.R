@@ -85,20 +85,23 @@ runningMean = function(x, winHalfSize = 2) {
 #' binData = binarizeData(trainRegions)
 #'
 #' @export binarizeData
-binarizeData = function(obs) {
-    myMat = do.call("rbind", obs)
-    myLambdas = c()
-    for (i in 1:ncol(myMat)) {
-        myLambdas[i] = mean(myMat[, i])
+binarizeData = function(obs, thresh = 1e-4){
+  myMat = do.call("rbind", obs)
+  
+  myLambdas = c()
+  for (i in 1:ncol(myMat)) {
+    myLambdas[i] = mean(myMat[,i])
+  }
+  myMax <- apply(myMat, 2, max)
+  mycutoffs = sapply(1:length(myLambdas), function(x) min(which(1 - ppois(1:myMax[x], 
+                                                                          myLambdas[x]) < thres)))
+  for (i in 1:length(obs)) {
+    for (j in 1:ncol(obs[[i]])) {
+      obs[[i]][, j] = ifelse(obs[[i]][, j] <= mycutoffs[j], 
+                             0, 1)
     }
-    mycutoffs = sapply(myLambdas, function(x) min(which(1 - ppois(1:1000, 
-        x) < 1e-04)))
-    for (i in 1:length(obs)) {
-        for (j in 1:ncol(obs[[i]])) {
-            obs[[i]][, j] = ifelse(obs[[i]][, j] <= mycutoffs[i], 0, 1)
-        }
-    }
-    obs
+  }
+  obs
 }
 
 
@@ -200,20 +203,20 @@ getAvgSignal = function(viterbi, obs, fct=mean) {
 #' @usage data2Gviz(obs, regions, binSize, gen, col = "black")
 #' 
 #' @export data2Gviz
-data2Gviz = function(obs, regions, binSize, gen, col = "black") {
-    dlist = list()
-    mySignals = obs[[1]]
-    regions = regions[1]
-    
-    for (n in colnames(mySignals)) {
-        dlist[[n]] = DataTrack(data = mySignals[, n], start = seq(start(regions), 
-            end(regions) - binSize + 1, by = binSize), end = seq(start(regions) + 
-            binSize - 1, end(regions), by = binSize), chromosome = as.character(seqnames(regions)), 
-            genome = gen, name = n, type = "h", col = col)
-    }
-    dlist
+data2Gviz = function (obs, regions, binSize, gen, col = "black", type = "h", chr = chr) 
+{
+  dlist = list()
+  mySignals = obs
+  regions = regions[seqnames(regions) == chr]
+  for (n in colnames(mySignals)) {
+    dlist[[n]] = DataTrack(data = mySignals[, n][1:(length(mySignals[, n])-1)], start = seq(start(regions), 
+                                                                                            end(regions) - binSize + 1, by = binSize), 
+                           end = seq(start(regions) + binSize - 1, end(regions), by = binSize), 
+                           chromosome = as.character(seqnames(regions)), 
+                           genome = gen, name = n, type = type, col = col)
+  }
+  dlist
 }
-
 
 
 #'  
