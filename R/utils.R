@@ -75,6 +75,7 @@ runningMean = function(x, winHalfSize = 2) {
 #' @title Binarize Sequencing data with the default ChromHMM binarization
 #' 
 #' @param obs The observations. A list of one or more entries containing the observation matrix (\code{numeric}) for the samples (e.g. chromosomes).
+#' @param thresh Upper tail probability to find a value equal or higher than Y (P(Y >= y))
 #' 
 #' @return Binarized observation sequences as a list.
 #' @usage binarizeData(obs)
@@ -218,6 +219,13 @@ data2Gviz = function (obs, regions, binSize, gen, col = "black", type = "h", chr
   dlist
 }
 
+
+#'  
+#'  @title Plot viterbi path for specific Genomic Regions
+#'  
+#'  
+
+plotViterbi <- function(viterbi, regions, gen, chrom, from, to, statecols, col)
 
 #'  
 #' Convert state segmentation for plotting with Gviz

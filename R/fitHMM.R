@@ -167,7 +167,7 @@ fitHMM = function(obs=list(), hmm, convergence=1e-6, maxIters=1000, dirFlags=lis
     
     mySplit = list()
     if(emission@type == "JointlyIndependent") {
-        print("I am in JointlyInd")
+        # print("I am in JointlyInd")
         if(length(observationEmissionType) == 0) stop("Please specify observationEmissionType to ensure that JointlyIndependent emission match observation data types!")
         if(length(observationEmissionType) != dim(obs[[1]])[2]) stop("Length of observationDataType does not match number of observation cols (data tracks)!")
         emissionTypes = unlist(sapply(emission@parameters$emissions, function(x) rep(x@type, x@dim)))
