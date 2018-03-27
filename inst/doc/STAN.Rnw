@@ -35,6 +35,7 @@ Max Planck Institute for Plant Breeding Research, Cologne, Germany} \\
 \title{The genomic STate ANnotation package}
 
 \begin{document}
+\SweaveOpts{concordance=TRUE}
 
 \maketitle
 
@@ -314,7 +315,7 @@ to = from+300000
 gvizViterbi_nb = viterbi2Gviz(viterbi_nb_gm12878, "chr11", "hg19", from, to, statecols_nb)
 gvizViterbi_poilog = viterbi2Gviz(viterbi_poilog_gm12878, "chr11", "hg19", from, to, 
         statecols_poilog)
-gvizData = data2Gviz(trainRegions[3], pilot.hg19[3], 200, "hg19", col="black")
+gvizData = data2Gviz(trainRegions[3], pilot.hg19[3], 200, "hg19", col="black", chrom = "chr11")
 @
 \vspace{0.25cm}
 
@@ -603,7 +604,7 @@ gvizViterbi_yeast = viterbi2Gviz(viterbi_bdhmm_gauss_gr[forward_segments],
 gvizViterbi_yeast2 = viterbi2Gviz(viterbi_bdhmm_gauss_gr[reverse_segments], 
         "chrIV", "sacCer3", from, to, statecols_yeast)
 
-gvizData_yeast = data2Gviz(yeastTF_databychrom_ex, yeastGRanges, 8, "sacCer3", col="black")
+gvizData_yeast = data2Gviz(yeastTF_databychrom_ex, yeastGRanges, 8, "sacCer3", col="black", chrom = chr)
 gaxis = GenomeAxisTrack()
 data(yeastTF_SGDGenes)
 mySize = c(1,rep(1,12), 0.5,0.5,3)
@@ -632,7 +633,7 @@ forward_segments = grep("F", viterbi_bdhmm_gauss_gr$name)
 reverse_segments = grep("R", viterbi_bdhmm_gauss_gr$name)
 gvizViterbi_yeast = viterbi2Gviz(viterbi_bdhmm_gauss_gr[forward_segments], "chrIV", "sacCer3", from, to, statecols_yeast)
 gvizViterbi_yeast2 = viterbi2Gviz(viterbi_bdhmm_gauss_gr[reverse_segments], "chrIV", "sacCer3", from, to, statecols_yeast)
-gvizData_yeast = data2Gviz(yeastTF_databychrom_ex, yeastGRanges, 8, "sacCer3", col="black")
+gvizData_yeast = data2Gviz(yeastTF_databychrom_ex, yeastGRanges, 8, "sacCer3", col="black", chrom = chr)
 gaxis = GenomeAxisTrack()
 data(yeastTF_SGDGenes)
 mySize = c(1,rep(1,12), 0.5,0.5,3)

@@ -35,6 +35,7 @@ Max Planck Institute for Plant Breeding Research, Cologne, Germany} \\
 \title{The genomic STate ANnotation package}
 
 \begin{document}
+\SweaveOpts{concordance=TRUE}
 
 \maketitle
 

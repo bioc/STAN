@@ -29,7 +29,7 @@ initBdHMM = function(obs, dStates = 0, uStates = 0, method, dirFlags = NULL, dir
     sizeFactors = matrix(1, nrow = length(obs), ncol = ncol(obs[[1]])), 
     sharedCov = FALSE) {
     if(is.null(dirFlags) & uStates != 0 & !sum(directedObs != 0 ) & dStates != 0)  stop("It is impossible to estimate appropiate initial parameters without any directinal information")
-    if(length(dirFlags) != length(obs)) stop("length of Flags and observation must match!")
+    if(length(dirFlags) != length(obs) & !is.null(directedObs)) stop("length of Flags and observation must match!")
     nStates = dStates + uStates
     rev.operation = 1:ncol(obs[[1]])
     for (i in 1:length(directedObs)) {

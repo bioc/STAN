@@ -201,14 +201,14 @@ getAvgSignal = function(viterbi, obs, fct=mean) {
 #' @param col The color of the data tracks.
 #' 
 #' @return A list containing the data tracks converted to Gviz objects for plotting.
-#' @usage data2Gviz(obs, regions, binSize, gen, col = "black")
+#' @usage data2Gviz(obs, regions, binSize, gen, col = "black", type = "h", chrom)
 #' 
 #' @export data2Gviz
-data2Gviz = function (obs, regions, binSize, gen, col = "black", type = "h", chr = chr) 
+data2Gviz = function (obs, regions, binSize, gen, col = "black", type = "h", chrom) 
 {
   dlist = list()
   mySignals = obs
-  regions = regions[seqnames(regions) == chr]
+  regions = regions[seqnames(regions) == chrom]
   for (n in colnames(mySignals)) {
     dlist[[n]] = DataTrack(data = mySignals[, n][1:(length(mySignals[, n])-1)], start = seq(start(regions), 
                                                                                             end(regions) - binSize + 1, by = binSize), 
@@ -219,13 +219,6 @@ data2Gviz = function (obs, regions, binSize, gen, col = "black", type = "h", chr
   dlist
 }
 
-
-#'  
-#'  @title Plot viterbi path for specific Genomic Regions
-#'  
-#'  
-
-plotViterbi <- function(viterbi, regions, gen, chrom, from, to, statecols, col)
 
 #'  
 #' Convert state segmentation for plotting with Gviz
