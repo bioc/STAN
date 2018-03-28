@@ -95,7 +95,7 @@ binarizeData = function(obs, thresh = 1e-4){
   }
   myMax <- apply(myMat, 2, max)
   mycutoffs = sapply(1:length(myLambdas), function(x) min(which(1 - ppois(1:myMax[x], 
-                                                                          myLambdas[x]) < thres)))
+                                                                          myLambdas[x]) < thresh)))
   for (i in 1:length(obs)) {
     for (j in 1:ncol(obs[[i]])) {
       obs[[i]][, j] = ifelse(obs[[i]][, j] <= mycutoffs[j], 
@@ -210,10 +210,9 @@ data2Gviz = function (obs, regions, binSize, gen, col = "black", type = "h", chr
   mySignals = obs
   regions = regions[seqnames(regions) == chrom]
   for (n in colnames(mySignals)) {
-    dlist[[n]] = DataTrack(data = mySignals[, n][1:(length(mySignals[, n])-1)], start = seq(start(regions), 
-                                                                                            end(regions) - binSize + 1, by = binSize), 
-                           end = seq(start(regions) + binSize - 1, end(regions), by = binSize), 
-                           chromosome = as.character(seqnames(regions)), 
+    dlist[[n]] = DataTrack(data = mySignals[, n], start = seq(start(regions), 
+                                                              end(regions) - binSize + 1, by = binSize), end = seq(start(regions) + 
+                                                                                                                     binSize - 1, end(regions), by = binSize), chromosome = as.character(seqnames(regions)), 
                            genome = gen, name = n, type = type, col = col)
   }
   dlist
