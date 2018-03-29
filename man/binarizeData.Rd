@@ -4,10 +4,12 @@
 \alias{binarizeData}
 \title{Binarize Sequencing data with the default ChromHMM binarization}
 \usage{
-binarizeData(obs)
+binarizeData(obs, thresh = 1e-04)
 }
 \arguments{
 \item{obs}{The observations. A list of one or more entries containing the observation matrix (\code{numeric}) for the samples (e.g. chromosomes).}
+
+\item{thresh}{Upper tail probability to find a value equal or higher than Y (P(Y >= y))}
 }
 \value{
 Binarized observation sequences as a list.
@@ -18,6 +20,6 @@ Binarize Sequencing data with the default ChromHMM binarization
 \examples{
 
 data(trainRegions)
-binData = binarizeData(trainRegions)
+binData = binarizeData(obs = trainRegions, thresh = 1e-4)
 
 }

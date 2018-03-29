@@ -4,7 +4,7 @@
 \alias{data2Gviz}
 \title{Convert data for plotting with Gviz}
 \usage{
-data2Gviz(obs, regions, binSize, gen, col = "black")
+data2Gviz(obs, regions, binSize, gen, col = "black", type = "h", chrom)
 }
 \arguments{
 \item{obs}{The observations. A list of one or more entries containing the observation matrix (\code{numeric}) for the samples (e.g. chromosomes).}
@@ -16,6 +16,10 @@ data2Gviz(obs, regions, binSize, gen, col = "black")
 \item{gen}{The geome id, e.g. hg19, hg38 for human.}
 
 \item{col}{The color of the data tracks.}
+
+\item{type}{Type of plot (See Gviz DataTrack documentation).}
+
+\item{chrom}{Chromosome in chich to create the object.}
 }
 \value{
 A list containing the data tracks converted to Gviz objects for plotting.

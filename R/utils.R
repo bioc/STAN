@@ -78,12 +78,12 @@ runningMean = function(x, winHalfSize = 2) {
 #' @param thresh Upper tail probability to find a value equal or higher than Y (P(Y >= y))
 #' 
 #' @return Binarized observation sequences as a list.
-#' @usage binarizeData(obs)
+#' @usage binarizeData(obs, thresh = 1e-04)
 #' 
 #' @examples
 #' 
 #' data(trainRegions)
-#' binData = binarizeData(trainRegions)
+#' binData = binarizeData(obs = trainRegions, thresh = 1e-4)
 #'
 #' @export binarizeData
 binarizeData = function(obs, thresh = 1e-4){
@@ -199,6 +199,8 @@ getAvgSignal = function(viterbi, obs, fct=mean) {
 #' @param binSize The bin size of the viterbi path. 
 #' @param gen The geome id, e.g. hg19, hg38 for human.
 #' @param col The color of the data tracks.
+#' @param type Type of plot (See Gviz DataTrack documentation).
+#' @param chrom Chromosome in chich to create the object.
 #' 
 #' @return A list containing the data tracks converted to Gviz objects for plotting.
 #' @usage data2Gviz(obs, regions, binSize, gen, col = "black", type = "h", chrom)

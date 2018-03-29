@@ -34,7 +34,7 @@ initNB = function(km, signalbychrom, celltypes = NULL, stateLabels = NULL,
     initCovs_humanCD4T = list()
     # print(names(cl2ind))
     if(myPlus){
-        myOrder <- order(sapply(cl2ind, function(x) mean(myMat[x, myPlus])), decreasing = T)
+        myOrder <- order(sapply(cl2ind, function(x) mean(myMat[x, myPlus])), decreasing = TRUE)
         cl2ind = cl2ind[myOrder]
         
     }
