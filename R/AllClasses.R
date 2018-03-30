@@ -80,7 +80,7 @@ checkParameters = function(type, parameters, nStates) {
             stop(paste("Dimensionality of Poisson probabilities unequal to one for states: ", 
                 which(!myLens), "\n", sep = ""))
         myLambda = unlist(parameters$lambda)
-        print(paste("any na in labdas:", is.na(myLambda)))
+        # print(paste("any na in labdas:", is.na(myLambda)))
         if (!all(myLambda > 0)) 
             stop("Poisson means are not > 0. Line 83")
         

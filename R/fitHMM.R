@@ -193,7 +193,7 @@ fitHMM = function(obs=list(), hmm, convergence=1e-6, maxIters=1000, dirFlags=lis
                 }
             #   print(bdHMM.settings$rev.operation)
                 if(class(hmm) == "bdHMM") {
-                    print(bdHMM.settings$rev.operation)
+                    # print(bdHMM.settings$rev.operation)
                     if(any( (bdHMM.settings$rev.operation[myD]+1) != (1:length(bdHMM.settings$rev.operation))[myD])) {
                         tempObs = c(tempObs, tempObs)
                         #print(bdHMM.settings$rev.operation)
@@ -224,7 +224,7 @@ fitHMM = function(obs=list(), hmm, convergence=1e-6, maxIters=1000, dirFlags=lis
             #   reorderObs = unlist(lapply(1:length(obs), function(x) c(x, x+length(obs))))
             #   myCurrSplit = myCurrSplit[reorderObs]
                 # browser()
-                print(length(myCurrSplit))
+                # print(length(myCurrSplit))
                 mySplit[[currType]] = list(countSplit=myCurrSplit, optimFct=ifelse(currType=="PoissonLogNormal",optimizePoiLog,optimizeNB))
             }
             
@@ -247,7 +247,7 @@ fitHMM = function(obs=list(), hmm, convergence=1e-6, maxIters=1000, dirFlags=lis
     if(length(emissionProbs) == 0) {
         hmm@emission = list(reformatEmissionAfterFitting(hmm_out$emission, emission@type, D, nStates))#hmm_out$emission#
     }
-    print(hmm@emission)
+    # print(hmm@emission)
     if(! is.null(bdHMM.settings$rev.operation)) {
         bdHMM.settings$rev.operation = bdHMM.settings$rev.operation + 1
         hmm@emission[[1]]@parameters = emissionRevOp(hmm@emission[[1]]@parameters, emission@type, bdHMM.settings, nStates, hmm@directedObs, colnames(obs[[1]]), hmm@stateNames)
