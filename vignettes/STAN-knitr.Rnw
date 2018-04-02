@@ -35,7 +35,7 @@ Max Planck Institute for Plant Breeding Research, Cologne, Germany} \\
 \title{The genomic STate ANnotation package}
 
 \begin{document}
-% \SweaveOpts{concordance=FALSE}
+% \SweaveOpts{concordance=TRUE}
 
 <<include=FALSE>>=
 library(knitr)

@@ -992,7 +992,7 @@ list<double> HMM::BaumWelch(double*** observations, int* T, int nsample, int max
     {
         ncores = this->K;
     }
-    int *myStateBuckets = (int*)malloc(sizeof(int)*ncores+1);
+    int *myStateBuckets = (int*)malloc(sizeof(int)*(ncores+1));
     for(i=0; i<=ncores; i++)
     {
         myStateBuckets[i] = 0;
