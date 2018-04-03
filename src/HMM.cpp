@@ -109,7 +109,7 @@ void HMM::calcEmissionProbs(double*** obs, double** emissionProb, int* T, int n,
     {
         double* rev_obs = (double*)malloc(sizeof(double)*D);
 
-        int i,j,t,k;
+        int i,t,k;
         double denom;
         for(t=myBounds[curr_core]; t<myBounds[curr_core+1]; t++)
         {
@@ -781,7 +781,7 @@ void HMM::updateSampleAux(double*** observations, int* T, int n, double** alpha,
     {
         ncores = this->K;
     }
-    int *myStateBuckets = (int*)malloc(sizeof(int)*ncores+1);
+    int *myStateBuckets = (int*)malloc(sizeof(int)*(ncores+1));
     for(i=0; i<=ncores; i++)
     {
         myStateBuckets[i] = 0;

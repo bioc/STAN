@@ -292,7 +292,7 @@ Rprintf("\n");*/
     {
         ncores = this->emissionParams->getD();
     }
-    int *myDimBuckets = (int*)malloc(sizeof(int)*ncores+1);
+    int *myDimBuckets = (int*)malloc(sizeof(int)*(ncores+1));
     for(i=0; i<=ncores; i++)
     {
         myDimBuckets[i] = 0;
@@ -472,7 +472,7 @@ int** isNaN, SEXP emissionPrior, int currN, int ncores)
     {
         ncores = this->emissionParams->getD();
     }
-    int *myDimBuckets = (int*)malloc(sizeof(int)*ncores+1);
+    int *myDimBuckets = (int*)malloc(sizeof(int)*(ncores+1));
     for(i=0; i<=ncores; i++)
     {
         myDimBuckets[i] = 0;
