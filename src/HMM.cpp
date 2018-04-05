@@ -796,7 +796,7 @@ void HMM::updateSampleAux(double*** observations, int* T, int n, double** alpha,
         }
         currbucket++;
     }
-    for(i=1; i<ncores+1; i++)
+    for(i=1; i<(ncores+1); i++)
     {
         myStateBuckets[i] = myStateBuckets[i]+myStateBuckets[i-1];
     }
@@ -812,7 +812,7 @@ void HMM::updateSampleAux(double*** observations, int* T, int n, double** alpha,
 
         int k;
 #pragma omp parallel for
-        for(k=1; k<ncores+1; k++)
+        for(k=1; k<(ncores+1); k++)
         {
 
             int state;
@@ -1007,7 +1007,7 @@ list<double> HMM::BaumWelch(double*** observations, int* T, int nsample, int max
         }
         currbucket++;
     }
-    for(i=1; i<ncores+1; i++)
+    for(i=1; i<(ncores+1); i++)
     {
         myStateBuckets[i] = myStateBuckets[i]+myStateBuckets[i-1];
     }
