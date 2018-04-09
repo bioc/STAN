@@ -644,18 +644,21 @@ double ParamContainerEmissions::getPiNB()
 double ParamContainerEmissions::setMuNB(double mu_nb)
 {
     this->mu_nb = mu_nb;
+    return this->mu_nb;
 }
 
 
 double ParamContainerEmissions::setSizeNB(double size_nb)
 {
     this->size_nb = size_nb;
+    return this->size_nb;
 }
 
 
 double ParamContainerEmissions::setPiNB(double pi_nb)
 {
     this->pi_nb = pi_nb;
+    return this->pi_nb;
 }
 
 
@@ -686,12 +689,14 @@ double ParamContainerEmissions::getSigmaPoiLog()
 double ParamContainerEmissions::setMuPoiLog(double mu_poilog)
 {
     this->mu_poilog = mu_poilog;
+    return this->mu_poilog;
 }
 
 
 double ParamContainerEmissions::setSigmaPoiLog(double sigma_poilog)
 {
     this->sigma_poilog = sigma_poilog;
+    return this->sigma_poilog;
 }
 
 
