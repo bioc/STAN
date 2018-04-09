@@ -209,8 +209,6 @@ ParamContainerEmissions::~ParamContainerEmissions()
     }
     if(this->whichone == BERNOULLI)
     {
-        int i;
-
         if(DEBUG_MEMORY)
         {
             printf("delete->ParamContainerEmissions:BERNOULLI; (%d bytes) \n", mem);
@@ -218,8 +216,6 @@ ParamContainerEmissions::~ParamContainerEmissions()
     }
     if(this->whichone == POISSON)
     {
-        int i;
-
         if(DEBUG_MEMORY)
         {
             printf("delete->ParamContainerEmissions:BERNOULLI; (%d bytes) \n", mem);

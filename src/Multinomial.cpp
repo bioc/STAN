@@ -23,7 +23,7 @@ Multinomial::Multinomial(ParamContainerEmissions *emissionParams)
     this->updateDenominatorMP = (double*) malloc(
         sizeof(double) * this->emissionParams->getD());
 
-    int d1, d2;
+    int d1;
     for (d1 = 0; d1 < this->emissionParams->getD(); d1++)
     {
         this->updateNumeratorMP[d1] = 0;
@@ -35,7 +35,6 @@ Multinomial::Multinomial(ParamContainerEmissions *emissionParams)
 Multinomial::~Multinomial()
 {
 
-    int d1;
     free(this->updateNumeratorMP);
     free(this->updateDenominatorMP);
 
@@ -55,7 +54,6 @@ double Multinomial::calcEmissionProbability(double *obs, int isna, int currN)
 //printf("Multinomial\n");
     int myN = 0;                                  //this->emissionParams->getN();
     int myD = this->emissionParams->getD();
-    double mult_coeff = 0;
     double numer = 0;
     double denom = 0;
     double probability = 1;
@@ -151,7 +149,7 @@ double Multinomial::calcEmissionProbability(double *obs, int isna, int currN)
 void Multinomial::updateAuxiliaries(double*** observations, double** gamma,
 double* Pk, int* T, int n, int i, int** isNaN)
 {
-    int t, d, l, obs_d, obs_d_revcomp;
+    int t, d, obs_d, obs_d_revcomp;
     double numer, denom;
 //	Rprintf("Mult-aux\n");
     int* revComp = this->emissionParams->getReverseComplementary();
@@ -209,7 +207,7 @@ void Multinomial::updateAuxiliariesCoupledRevop(double*** observations,
 double** gamma, double* Pk, int* T, int n, int i, int statecouple,
 int* state2flag, int* revop, int** isNaN)
 {
-    int t, d, l, obs_d,obs_d_revcomp;
+    int t, d, obs_d,obs_d_revcomp;
     double numer, denom;
     int* revComp = this->emissionParams->getReverseComplementary();
 

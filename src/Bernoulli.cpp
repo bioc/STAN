@@ -22,7 +22,7 @@ Bernoulli::Bernoulli(ParamContainerEmissions *emissionParams)
     this->updateDenominatorP = (double*) malloc(
         sizeof(double) * this->emissionParams->getD());
 
-    int d1, d2;
+    int d1;
     for (d1 = 0; d1 < this->emissionParams->getD(); d1++)
     {
         this->updateNumeratorP[d1] = 0;
@@ -33,8 +33,6 @@ Bernoulli::Bernoulli(ParamContainerEmissions *emissionParams)
 
 Bernoulli::~Bernoulli()
 {
-
-    int d1;
     free(this->updateNumeratorP);
     free(this->updateDenominatorP);
 
@@ -57,7 +55,7 @@ double Bernoulli::getP()
 double Bernoulli::calcEmissionProbability(double *obs, int isna, int currN)
 {
 
-    int i, j, obs_i;
+    int i, obs_i;
     double probability = 1;
     if (isna == 0)
     {
@@ -96,7 +94,7 @@ double Bernoulli::calcEmissionProbability(double *obs, int isna, int currN)
 void Bernoulli::updateAuxiliaries(double*** observations, double** gamma,
 double* Pk, int* T, int n, int i, int** isNaN)
 {
-    int t, d, l, obs_d;
+    int t, d, obs_d;
     double numer, denom;
     for (d = 0; d < this->emissionParams->getD(); d++)
     {
@@ -137,7 +135,7 @@ int Bernoulli::IndicatorFct(int obs)
 void Bernoulli::updateAuxiliariesCoupled(double*** observations, double** gamma,
 double* Pk, int* T, int n, int i, int statecouple, int** isNaN)
 {
-    int t, d, l, obs_d;
+    int t, d, obs_d;
     double numer, denom;
 //printf("BERNOULLI o.revob s=%d, c=%d\n", i, statecouple);
     for (d = 0; d < this->emissionParams->getD(); d++)
@@ -167,7 +165,7 @@ void Bernoulli::updateAuxiliariesCoupledRevop(double*** observations,
 double** gamma, double* Pk, int* T, int n, int i, int statecouple,
 int* state2flag, int* revop, int** isNaN)
 {
-    int t, d, l, obs_d;
+    int t, d, obs_d;
     double numer, denom;
 
 //printf("BERNOULLI s=%d, c=%d\n", i, statecouple);
@@ -215,7 +213,6 @@ int** isNaN, SEXP emissionPrior, int currN, int ncores)
 {
 
 //printf("************ update Coupled REvop\n");
-    int skipcounter = 0;
     int d;
     for (d = 0; d < this->emissionParams->getD(); d++)
     {
@@ -259,7 +256,6 @@ void Bernoulli::update(double ***observations, double* Pk, int** isNaN,
 SEXP emissionPrior, int currN, int ncores)
 {
 //printf("Entered first update fct from Bernoulli\n");
-    int skipcounter = 0;
     int d;
     for (d = 0; d < this->emissionParams->getD(); d++)
     {

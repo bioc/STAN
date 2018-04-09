@@ -59,7 +59,7 @@ void inverseR(double** mat, int N)
 
 // call solnp from R for optimization
     SEXP call = PROTECT( lang2( install( "c2invertCOV"), sexpmat ) ) ;
-    SEXP res = PROTECT( eval( call, R_GlobalEnv ) ) ;
+    (void) eval( call, R_GlobalEnv ) ;
 
 // write results into matrix
     for(i=0; i<N; i++)
@@ -72,7 +72,7 @@ void inverseR(double** mat, int N)
         Rprintf("\n");
     }
 
-    UNPROTECT(1);
+    UNPROTECT(2);
 }
 
 

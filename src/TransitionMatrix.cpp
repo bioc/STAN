@@ -90,8 +90,8 @@ void TransitionMatrix::updateAuxiliaries(double** gamma, double*** xsi,  double*
         }
     }
 
-    int i,j,k;
-    double numer, denom;
+    int i,j;
+    double numer;
     double* xsi_sum = (double*)malloc(sizeof(double)*this->K);
     if(verbose)
     {
@@ -107,7 +107,6 @@ void TransitionMatrix::updateAuxiliaries(double** gamma, double*** xsi,  double*
             for(j=0; j<K; j++)
             {
                 numer = 0.0;
-                denom = 0.0;
                 for(t=1; t<T[n]; t++)
                 {
 //if(isNaN[n][t] == 0 & isNaN[n][t-1] == 0) {
@@ -670,8 +669,8 @@ SEXP TransitionMatrix::callRsolnp(SEXP pars)
     else
     {
         SEXP warn = PROTECT( lang2( install( "warning"), mkString("Rsolnp did not converge. Using old parameter estimates!\n") ) ) ;
-        SEXP exwarn = PROTECT( eval( warn, R_GlobalEnv ) ) ;
-        UNPROTECT(2);
+        (void) eval( warn, R_GlobalEnv ) ;
+        UNPROTECT(1);
     }
 
     UNPROTECT(2) ;

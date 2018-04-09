@@ -23,7 +23,6 @@ ParamContainerEmissions *emissionParams)
 PoissonLogNormal::~PoissonLogNormal()
 {
 
-    int d1;
     if (DEBUG_MEMORY)
     {
         printf("delete->PoissonLogNormal; (%d bytes) ", 0);
@@ -40,7 +39,7 @@ double PoissonLogNormal::calcEmissionProbability(double *obs, int isna, int curr
     int* myStart = this->emissionParams->getStart();
     D = this->emissionParams->getD();
 //printf("sF=%f\n",this->emissionParams->getSizeFactorPoiLog()[currN]);
-    if(isna == -1 | isna == 1)
+    if((isna == -1) || (isna == 1))
     {
         for (i = 0; i < D; i++)
         {
@@ -132,11 +131,10 @@ double* Pk, int statecouple, int* state2flag, int* revop,
 double** revGammaAux, int** isNaN, SEXP emissionPrior, int currN, int ncores)
 {
     int n;
-    SEXP myObs, pars, myGammas, myd;
+    SEXP myGammas, myd;
 //Rprintf("Getting ready to optimize!\n");
 
     int* myStart = this->emissionParams->getStart();
-    int myD = this->emissionParams->getD();
     int* myT = this->emissionParams->getT();
     int lower_n = 0;
     int upper_n = this->emissionParams->getNsample();
@@ -242,7 +240,7 @@ double** revGammaAux, int** isNaN, SEXP emissionPrior, int currN, int ncores)
         }
     }
 
-    SEXP MUNB, SIZENB, PINB, CURRN, wname;
+    SEXP MUNB, SIZENB, CURRN, wname;
     PROTECT(MUNB=NEW_NUMERIC(1));
     NUMERIC_POINTER(MUNB)[0] = this->emissionParams->getMuPoiLog();
     PROTECT(SIZENB=NEW_NUMERIC(1));
@@ -296,13 +294,11 @@ double** revGammaAux, int** isNaN, SEXP emissionPrior, int currN, int ncores)
     this->emissionParams->setSigmaPoiLog(mySigmaNew);
 
     UNPROTECT(11);
-    int i,j,d;
+    int j;
     if(observations != NULL)
     {
         double** upobs = this->getParameter()->getUniqueObsProb();
         int** ulens = this->getParameter()->getUniqueLens();
-        int nsample =  this->getParameter()->getN();
-        int myD =  this->getParameter()->getD();
         double* myval = (double*)malloc(sizeof(double)*1);
 
         for(n=lower_n; n<upper_n; n++)
@@ -325,7 +321,6 @@ double** revGammaAux, int** isNaN, SEXP emissionPrior, int currN, int ncores)
 
 double PoissonLogNormal::Prior(SEXP hyperparams)
 {
-    int i, j;
     double out = 1;
     return out;
 
@@ -337,12 +332,11 @@ int** isNaN, SEXP emissionPrior, int currN, int ncores)
 {
 
     int n;
-    SEXP myObs, pars, myGammas, myd;
+    SEXP myGammas, myd;
 
 //Rprintf("Getting ready to optimize!\n");
 
     int* myStart = this->emissionParams->getStart();
-    int myD = this->emissionParams->getD();
     int* myT = this->emissionParams->getT();
     int lower_n = 0;
     int upper_n = this->emissionParams->getNsample();
@@ -376,7 +370,7 @@ int** isNaN, SEXP emissionPrior, int currN, int ncores)
         }
     }
 
-    SEXP MUNB, SIZENB, PINB, CURRN, wname;
+    SEXP MUNB, SIZENB, CURRN, wname;
     PROTECT(MUNB=NEW_NUMERIC(1));
     NUMERIC_POINTER(MUNB)[0] = this->emissionParams->getMuPoiLog();
     PROTECT(SIZENB=NEW_NUMERIC(1));
@@ -430,13 +424,11 @@ int** isNaN, SEXP emissionPrior, int currN, int ncores)
     this->emissionParams->setSigmaPoiLog(mySigmaNew);
 
     UNPROTECT(11);
-    int i,j,d;
+    int j;
     if(observations != NULL)
     {
         double** upobs = this->getParameter()->getUniqueObsProb();
         int** ulens = this->getParameter()->getUniqueLens();
-        int nsample =  this->getParameter()->getN();
-        int myD =  this->getParameter()->getD();
         double* myval = (double*)malloc(sizeof(double)*1);
 
         for(n=lower_n; n<upper_n; n++)
@@ -461,7 +453,7 @@ void PoissonLogNormal::setParsToTwin(EmissionFunction* myTwinEmission, int currN
     this->emissionParams->setMuPoiLog(myTwinEmission->getParameter()->getMuPoiLog());
     this->emissionParams->setSigmaPoiLog(myTwinEmission->getParameter()->getSigmaPoiLog());
 
-    int i,j,d,n;
+    int j,n;
     int lower_n = 0;
     int upper_n = this->emissionParams->getNsample();
     if(currN != -1)
@@ -473,8 +465,6 @@ void PoissonLogNormal::setParsToTwin(EmissionFunction* myTwinEmission, int currN
     {
         double** upobs = this->getParameter()->getUniqueObsProb();
         int** ulens = this->getParameter()->getUniqueLens();
-        int nsample =  this->getParameter()->getN();
-        int myD =  this->getParameter()->getD();
         double* myval = (double*)malloc(sizeof(double)*1);
 
         for(n=lower_n; n<upper_n; n++)

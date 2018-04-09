@@ -89,7 +89,7 @@ int allocateMemBeta(double*** beta, int maxLen, int K)
 
 int allocateMemRescFac(double** c, int maxLen, int K)
 {
-    int i,t;
+    int t;
 
     int memory_used = 0;
 
@@ -181,7 +181,7 @@ int allocateMemXsi(double**** xsi, int maxLen, int K)
 
 int allocateMemEmissionProb(double*** emissionProb, int maxLen, int K)
 {
-    int i,j,t;
+    int i,t;
 
     int memory_used = 0;
 
@@ -212,7 +212,7 @@ int allocateMemEmissionProb(double*** emissionProb, int maxLen, int K)
 
 int deallocateMemAlpha(double** alpha, int maxLen, int K)
 {
-    int i,t;
+    int t;
     int memory_free = 0;
 
     for(t=0; t<maxLen; t++)
@@ -230,7 +230,7 @@ int deallocateMemAlpha(double** alpha, int maxLen, int K)
 
 int deallocateMemBeta(double** beta, int maxLen, int K)
 {
-    int i,j,t;
+    int t;
     int memory_free = 0;
 
     for(t=0; t<maxLen; t++)
@@ -249,7 +249,6 @@ int deallocateMemBeta(double** beta, int maxLen, int K)
 
 int deallocateMemRescFac(double* c, int maxLen, int K)
 {
-    int i,j,t;
     int memory_free = 0;
 
     free(c);
@@ -262,7 +261,7 @@ int deallocateMemRescFac(double* c, int maxLen, int K)
 
 int deallocateMemGamma(double** gamma, int maxLen, int K)
 {
-    int i,j,t;
+    int t;
     int memory_free = 0;
 
     for(t=0; t<maxLen; t++)
@@ -282,7 +281,7 @@ int deallocateMemGamma(double** gamma, int maxLen, int K)
 
 int deallocateMemXsi(double*** xsi, int maxLen, int K)
 {
-    int i,j,t;
+    int i,t;
     int memory_free = 0;
 
     for(t=0; t<maxLen; t++)
@@ -306,7 +305,7 @@ int deallocateMemXsi(double*** xsi, int maxLen, int K)
 
 int deallocateMemEmissionProb(double** emissionProb, int maxLen, int K)
 {
-    int i,j,t;
+    int i;
     int memory_free = 0;
 
     for(i=0; i<K; i++)

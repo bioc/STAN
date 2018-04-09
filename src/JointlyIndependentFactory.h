@@ -25,7 +25,6 @@ class JointlyIndependentFactory : public EmissionFactory
 
         EmissionFunction* createEmissionFunctionMixed(list<EmissionFunction*> efb, ParamContainerEmissions *emissionParams)
         {
-            int parallel=0;
             if(DEBUG_MEMORY)
             {
                 printf("createEmissionFunctionMixed factory->create():");

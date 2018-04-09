@@ -133,7 +133,7 @@ double MultivariateGaussian::calcEmissionProbability(double *obs, int isna, int 
 void MultivariateGaussian::updateAuxiliaries(double*** observations,
 double** gamma, double* Pk, int* T, int n, int i, int** isNaN)
 {
-    int t, d, l;
+    int t, d;
     double numer, denom;
     int obs_d = 0;
 //Rprintf("Gauss-aux\n");
@@ -166,7 +166,7 @@ void MultivariateGaussian::updateAuxiliariesCoupled(double*** observations,
 double** gamma, double* Pk, int* T, int n, int i, int statecouple,
 int** isNaN)
 {
-    int t, d, l, obs_d;
+    int t, d, obs_d;
     double numer, denom;
 
     for (d = 0; d < this->emissionParams->getD(); d++)
@@ -200,7 +200,7 @@ void MultivariateGaussian::updateAuxiliariesCoupledRevop(double*** observations,
 double** gamma, double* Pk, int* T, int n, int i, int statecouple,
 int* state2flag, int* revop, int** isNaN)
 {
-    int t, d, l, obs_d;
+    int t, d, obs_d;
     double numer, denom;
 
 //printf(" GAUSSIAN s=%d, c=%d\n", i, statecouple);
@@ -248,7 +248,6 @@ double* Pk, int statecouple, int* state2flag, int* revop,
 double** revGammaAux, int** isNaN, SEXP emissionPrior, int currN, int ncores)
 {
 
-    int skipcounter = 0;
     int d;
     for (d = 0; d < this->emissionParams->getD(); d++)
     {
@@ -262,7 +261,6 @@ double** revGammaAux, int** isNaN, SEXP emissionPrior, int currN, int ncores)
 Rprintf("%d ", revop[d]);
 }
 Rprintf("\n");*/
-    double numer, denom;
     double** myTempNumer = (double**) malloc(sizeof(double*) * this->emissionParams->getD());
     double** myTempDenom = (double**) malloc(sizeof(double*) * this->emissionParams->getD());
 
@@ -334,7 +332,7 @@ Rprintf("\n");*/
                     for (d2 = d1; d2 < myD; d2++)
                     {
                         int obs_d2 = myStart[d2];
-                        int t, l;
+                        int t;
                         for (t = 0; t < myT[n]; t++)
                         {
                             if (isNaN[n][t] == 0)
@@ -442,7 +440,6 @@ int** isNaN, SEXP emissionPrior, int currN, int ncores)
 //printf("%f ", this->emissionParams->getGaussianMU()[d][0]);
     }
 
-    double numer, denom;
     double** myTempNumer = (double**) malloc(sizeof(double*) * this->emissionParams->getD());
     double** myTempDenom = (double**) malloc(sizeof(double*) * this->emissionParams->getD());
 
@@ -515,7 +512,7 @@ int** isNaN, SEXP emissionPrior, int currN, int ncores)
                     for (d2 = d1; d2 < myD; d2++)
                     {
                         int obs_d2 = myStart[d2];
-                        int t, l;
+                        int t;
                         for (t = 0; t < myT[n]; t++)
                         {
                             if (isNaN[n][t] == 0)

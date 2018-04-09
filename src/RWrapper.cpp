@@ -111,7 +111,7 @@ extern "C"
 
     EmissionFunction** RGETBERNOULLI2(SEXP sexpbernoullip, int D, SEXP sexpk, int* start)
     {
-        int i,j,k;
+        int k;
 //	Rprintf("getting bernoulli\n");
         int K = INTEGER(sexpk)[0];
 
@@ -133,7 +133,7 @@ extern "C"
 
     EmissionFunction** RGETPOISSON(SEXP sexppoissonlambda, int D, SEXP sexpk, int* start)
     {
-        int i,j,k;
+        int k;
         int K = INTEGER(sexpk)[0];
 
         EmissionFactory* factory = createEmissionFactory(POISSON);
@@ -154,7 +154,7 @@ extern "C"
 
     EmissionFunction** RGETMULTINOMIAL(SEXP sexpmultiP, SEXP sexpmultiRevCompl, int D, SEXP sexpk, int* start, int* state2flag)
     {
-        int i,j,d,k;
+        int d,k;
         int K = INTEGER(sexpk)[0];
 
         EmissionFactory* factory = createEmissionFactory(MULTINOMIAL);
@@ -193,7 +193,7 @@ extern "C"
 
     EmissionFunction** RGETNEGATIVEBINOMIAL(SEXP sexpMU, SEXP sexpSIZE, SEXP sexpSIZEFAC, SEXP sexpPI, int D, SEXP sexpk, int* start, double*** observations, int* T, int nsample, SEXP uniqueCountSplit, int* revop)
     {
-        int i,j,d,k,n;
+        int i,j,k,n;
         int K = INTEGER(sexpk)[0];
 
         EmissionFactory* factory = createEmissionFactory(NEGATIVEBINOMIAL);
@@ -246,7 +246,7 @@ extern "C"
 
     EmissionFunction** RGETPOISSONLOGNORMAL(SEXP sexpMU, SEXP sexpSIGMA, SEXP sexpSIZEFAC, int D, SEXP sexpk, int* start, double*** observations, int* T, int nsample, SEXP uniqueCountSplit, int* revop)
     {
-        int i,j,d,k,n;
+        int i,j,k,n;
         int K = INTEGER(sexpk)[0];
 
         EmissionFactory* factory = createEmissionFactory(POISSONLOGNORMAL);
@@ -356,7 +356,7 @@ else {
 
     EmissionFunction** RGETBERNOULLI(SEXP sexpbernoullip, int D, SEXP sexpk, int* start, int row)
     {
-        int i,j,k;
+        int k;
         int K = INTEGER(sexpk)[0];
 
         EmissionFactory* factory = createEmissionFactory(BERNOULLI);
@@ -461,7 +461,7 @@ else {
 
     SEXP RPREPAREBERNOULLIPAR(EmissionFunction** myEmissions, int K)
     {
-        int k,i,j;
+        int k,i;
         int D = myEmissions[0]->getParameter()->getD();
 
         SEXP emissionParam, currP, pFit, wname;
@@ -494,7 +494,7 @@ else {
 
     SEXP RPREPAREBERNOULLIPAR2(EmissionFunction** myEmissions, int K, int useNames)
     {
-        int k,d,j;
+        int k,d;
         int D = myEmissions[0]->getParameter()->getD();
 
         SEXP p, currState, wname;
@@ -527,7 +527,7 @@ else {
 
     SEXP RPREPAREPOISSONPAR(EmissionFunction** myEmissions, int K, int useNames)
     {
-        int k,d,j;
+        int k,d;
         int D = myEmissions[0]->getParameter()->getD();
 
         SEXP p, currState, wname;
@@ -560,7 +560,7 @@ else {
 
     SEXP RPREPAREMULTINOMIALPAR(EmissionFunction** myEmissions, int K, int useNames)
     {
-        int k,d,j;
+        int k,d;
         int D = myEmissions[0]->getParameter()->getD();
 
         SEXP p, emissionParam, myComp, wname, currP;
@@ -606,7 +606,7 @@ else {
 
     SEXP RPREPARENEGATIVEBINOMIALPAR(EmissionFunction** myEmissions, int K, int useNames)
     {
-        int k,d,j;
+        int k,d;
         int D = myEmissions[0]->getParameter()->getD();
 
         SEXP mu_nb, size_nb, sizeFactor, pi, emissionParam, wname, currMU, currSize, currSizeFactor, currPi;
@@ -663,7 +663,7 @@ else {
 
     SEXP RPREPAREPOISSONLOGNORMALPAR(EmissionFunction** myEmissions, int K, int useNames)
     {
-        int k,d,j;
+        int k,d;
         int D = myEmissions[0]->getParameter()->getD();
 
         SEXP mu_pln, sigma_pln, emissionParam, wname, currMU, currSigma, sizeFactor, currSizeFactor;
@@ -794,7 +794,7 @@ else {
  */
     EmissionFunction** createJointlyIndependent(std::list<EmissionFunction**> bernoulligauss, int D, SEXP sexpk, int* T, int nsample)
     {
-        int i,j,k;
+        int k;
         int K = INTEGER(sexpk)[0];
 
         EmissionFunction **HMMEmissionFunctions = allocateEmissionFunctionVector(K);
@@ -808,7 +808,6 @@ else {
             }
             std::list<EmissionFunction**>::iterator pos;
             std::list<EmissionFunction*> combinedPerState;
-            int d = 0;
             for (pos = bernoulligauss.begin(); pos!=bernoulligauss.end(); pos++)
             {
 ////Rprintf("\nthis start: %d  dim %d\n\n", (**pos)->getParameter()->getStart(), (**pos)->getParameter()->getD());
@@ -979,7 +978,7 @@ for (pos1 = combinedPerState.begin(); pos1!=combinedPerState.end(); pos1++) {
 
     void RFREEFLAGS(SEXP sexpflags, SEXP sexpstate2flag, int** flags, int* state2flag, int nsample)
     {
-        int n,t,i;
+        int n;
 
         if(LENGTH(sexpflags) != 0)
         {
@@ -1046,10 +1045,8 @@ for (pos1 = combinedPerState.begin(); pos1!=combinedPerState.end(); pos1++) {
         int i;
         EmissionFunction** myEmissions = NULL;
         const char* gauss = "Gaussian";
-        const char* independent = "Independent";
         const char* jointlyindependent = "JointlyIndependent";
         const char* multinomial = "Multinomial";
-        const char* negativebinomial = "NegativeBinomial";
 
         if(strcmp(type, gauss) == 0)
         {
@@ -1080,10 +1077,8 @@ for (pos1 = combinedPerState.begin(); pos1!=combinedPerState.end(); pos1++) {
             for (currEmission = 0; currEmission < nemissions; currEmission++)
             {
                 int* Ds = NULL;
-                int ordersize;
                 SEXP currDims = getListElement(sexpemission, "emissionDim");
                 SEXP types = getListElement(sexpemission, "types");
-                int currDim = length(currDims);
                 Ds = new int[LENGTH(VECTOR_ELT(currDims, currEmission))];
                 const char* typ = CHAR(STRING_ELT(types, currEmission));
                 int currD;
@@ -1125,11 +1120,9 @@ for (pos1 = combinedPerState.begin(); pos1!=combinedPerState.end(); pos1++) {
     {
         SEXP sexpemissionParam;
         const char* gauss = "Gaussian";
-        const char* independent = "Independent";
         const char* jointlyindependent = "JointlyIndependent";
         const char* multinomial = "Multinomial";
         const char* negativebinomial = "NegativeBinomial";
-        const char* poissonlognormal = "PoissonLogNormal";
 
         if(LENGTH(sexpfixedEmission) == 0)
         {
@@ -1178,7 +1171,7 @@ for (pos1 = combinedPerState.begin(); pos1!=combinedPerState.end(); pos1++) {
         }
         D = sumD;
 
-        int i,j,k,n,t;
+        int i,n,t;
         int K = INTEGER(sexpk)[0];
 
 // parse observations
@@ -1357,9 +1350,8 @@ Rprintf("\n");}
             sumD = sumD + INTEGER(sexpdim)[p];
         }
         D = sumD;
-        double regularize = REAL(sexpregularize)[0];
 
-        int i,j,k,n,t;
+        int i,n,t;
         int K = INTEGER(sexpk)[0];
         int ncores = INTEGER(sexpparallel)[0];
         int clust = INTEGER(sexpclustering)[0];
@@ -1661,7 +1653,7 @@ Rprintf("\n");}
         }
         D = sumD;
 
-        int i,j,k,n,t;
+        int i,n,t;
         int K = INTEGER(sexpk)[0];
 
 // parse observations
@@ -1883,7 +1875,7 @@ Rprintf("\n");}
         }
         D = sumD;
 
-        int i,j,k,n,t;
+        int i,n,t;
         int K = INTEGER(sexpk)[0];
 
 // parse observations

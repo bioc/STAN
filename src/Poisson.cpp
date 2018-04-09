@@ -23,7 +23,7 @@ Poisson::Poisson(ParamContainerEmissions *emissionParams)
     this->updateDenominatorLambda = (double*) malloc(
         sizeof(double) * this->emissionParams->getD());
 
-    int d1, d2;
+    int d1;
     for (d1 = 0; d1 < this->emissionParams->getD(); d1++)
     {
         this->updateNumeratorLambda[d1] = 0;
@@ -35,7 +35,6 @@ Poisson::Poisson(ParamContainerEmissions *emissionParams)
 Poisson::~Poisson()
 {
 
-    int d1;
     free(this->updateNumeratorLambda);
     free(this->updateDenominatorLambda);
 
@@ -98,7 +97,7 @@ double Poisson::calcEmissionProbability(double *obs, int isna, int currN)
 void Poisson::updateAuxiliaries(double*** observations, double** gamma,
 double* Pk, int* T, int n, int i, int** isNaN)
 {
-    int t, d, l, obs_d;
+    int t, d, obs_d;
     double numer, denom;
     for (d = 0; d < this->emissionParams->getD(); d++)
     {
@@ -130,7 +129,7 @@ double* Pk, int* T, int n, int i, int** isNaN)
 void Poisson::updateAuxiliariesCoupled(double*** observations, double** gamma,
 double* Pk, int* T, int n, int i, int statecouple, int** isNaN)
 {
-    int t, d, l, obs_d;
+    int t, d, obs_d;
     double numer, denom;
 //printf("BERNOULLI o.revob s=%d, c=%d\n", i, statecouple);
     for (d = 0; d < this->emissionParams->getD(); d++)
@@ -160,7 +159,7 @@ void Poisson::updateAuxiliariesCoupledRevop(double*** observations,
 double** gamma, double* Pk, int* T, int n, int i, int statecouple,
 int* state2flag, int* revop, int** isNaN)
 {
-    int t, d, l, obs_d;
+    int t, d, obs_d;
     double numer, denom;
 
 //printf("BERNOULLI s=%d, c=%d\n", i, statecouple);
@@ -208,7 +207,6 @@ int** isNaN, SEXP emissionPrior, int currN, int ncores)
 {
 
 //printf("************ update Coupled REvop\n");
-    int skipcounter = 0;
     int d;
     for (d = 0; d < this->emissionParams->getD(); d++)
     {
@@ -234,7 +232,6 @@ void Poisson::update(double ***observations, double* Pk, int** isNaN,
 SEXP emissionPrior, int currN, int ncores)
 {
 //printf("Entered first update fct from Poisson\n");
-    int skipcounter = 0;
     int d;
     for (d = 0; d < this->emissionParams->getD(); d++)
     {

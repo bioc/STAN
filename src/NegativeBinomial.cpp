@@ -33,7 +33,6 @@ ParamContainerEmissions *emissionParams)
 NegativeBinomial::~NegativeBinomial()
 {
 
-    int d1;
     if (DEBUG_MEMORY)
     {
         Rprintf("delete->NegativeBinomial; (%d bytes) ", 0);
@@ -52,7 +51,7 @@ double NegativeBinomial::calcEmissionProbability(double *obs, int isna, int curr
 //	printf("sF=%f\n",this->getParameter()->getSizeFactorNB()[currN]);
 
     D = this->emissionParams->getD();
-    if(isna == -1 | isna == 1)
+    if((isna == -1) || (isna == 1))
     {
         for (i = 0; i < D; i++)
         {
@@ -172,9 +171,8 @@ double* Pk, int statecouple, int* state2flag, int* revop,
 double** revGammaAux, int** isNaN, SEXP emissionPrior, int currN, int ncores)
 {
     int n;
-    SEXP myObs, pars, myGammas, myd;
+    SEXP pars, myGammas, myd;
     // Rprintf("I am here");
-    int d;
 /*		for (d = 0; d < this->emissionParams->getD(); d++) {
             printf("%f ", this->updateNumeratorMU[d] / this->updateDenominatorMU[d]);
             this->updateNumeratorMU[d] = 0;
@@ -189,7 +187,6 @@ double** revGammaAux, int** isNaN, SEXP emissionPrior, int currN, int ncores)
     NUMERIC_POINTER(pars)[2] = this->emissionParams->getPiNB();
 
     int* myStart = this->emissionParams->getStart();
-    int myD = this->emissionParams->getD();
     int* myT = this->emissionParams->getT();
     int lower_n = 0;
     int upper_n = this->emissionParams->getNsample();
@@ -431,13 +428,11 @@ counter++;
     this->emissionParams->setPiNB(myPiNew);
 
     UNPROTECT(14);
-    int i,j;
+    int j;
     if(observations != NULL)
     {
         double** upobs = this->getParameter()->getUniqueObsProb();
         int** ulens = this->getParameter()->getUniqueLens();
-        int nsample =  this->getParameter()->getN();
-        int myD =  this->getParameter()->getD();
         double* myval = (double*)malloc(sizeof(double)*1);
 
         for(n=lower_n; n<upper_n; n++)
@@ -460,7 +455,6 @@ counter++;
 
 double NegativeBinomial::Prior(SEXP hyperparams)
 {
-    int i, j;
     double out = 1;
     return out;
 
@@ -472,7 +466,7 @@ int** isNaN, SEXP emissionPrior, int currN, int ncores)
 {
 
     int n;
-    SEXP myObs, pars, myGammas, myd;
+    SEXP pars, myGammas, myd;
 
 //Rprintf("Getting ready to optimize!\n");
     PROTECT(pars=NEW_NUMERIC(3));
@@ -481,7 +475,6 @@ int** isNaN, SEXP emissionPrior, int currN, int ncores)
     NUMERIC_POINTER(pars)[2] = this->emissionParams->getPiNB();
 
     int* myStart = this->emissionParams->getStart();
-    int myD = this->emissionParams->getD();
     int* myT = this->emissionParams->getT();
     int lower_n = 0;
     int upper_n = this->emissionParams->getNsample();
@@ -594,13 +587,11 @@ for (n = lower_n; n < upper_n; n++) {
     this->emissionParams->setPiNB(myPiNew);
 
     UNPROTECT(14);
-    int i,j,d;
+    int j;
     if(observations != NULL)
     {
         double** upobs = this->getParameter()->getUniqueObsProb();
         int** ulens = this->getParameter()->getUniqueLens();
-        int nsample =  this->getParameter()->getN();
-        int myD =  this->getParameter()->getD();
         double* myval = (double*)malloc(sizeof(double)*1);
 
         for(n=lower_n; n<upper_n; n++)
@@ -625,7 +616,7 @@ void NegativeBinomial::setParsToTwin(EmissionFunction* myTwinEmission, int currN
     this->emissionParams->setMuNB(myTwinEmission->getParameter()->getMuNB());
     this->emissionParams->setSizeNB(myTwinEmission->getParameter()->getSizeNB());
     this->emissionParams->setPiNB(myTwinEmission->getParameter()->getPiNB());
-    int i,j,d,n;
+    int j,n;
     int lower_n = 0;
     int upper_n = this->emissionParams->getNsample();
     if(currN != -1)
@@ -637,8 +628,6 @@ void NegativeBinomial::setParsToTwin(EmissionFunction* myTwinEmission, int currN
     {
         double** upobs = this->getParameter()->getUniqueObsProb();
         int** ulens = this->getParameter()->getUniqueLens();
-        int nsample =  this->getParameter()->getN();
-        int myD =  this->getParameter()->getD();
         double* myval = (double*)malloc(sizeof(double)*1);
 
         for(n=lower_n; n<upper_n; n++)

@@ -54,7 +54,6 @@ void HMM::reverseObs(double *orig, double** rev, int* revop, int D)
 
 void HMM::calcEmissionProbs(double*** obs, double** emissionProb, int* T, int n, int** flags, int* state2flag, int* revop, int** isNaN, int ncores, int verbose, int* couples)
 {
-    double proba;
     int D = this->emissions[0]->getParameter()->getD();
 // 	#pragma omp parallel private(i,t,proba)
 // 	{
@@ -102,15 +101,13 @@ void HMM::calcEmissionProbs(double*** obs, double** emissionProb, int* T, int n,
 
     int curr_core;
 //Rprintf("ncores=%d\n", ncores);
-    double **myTransMat = this->A->getTransMat();
 
 #pragma omp parallel for
     for(curr_core=0; curr_core<ncores; curr_core++)
     {
         double* rev_obs = (double*)malloc(sizeof(double)*D);
 
-        int i,t,k;
-        double denom;
+        int i,t;
         for(t=myBounds[curr_core]; t<myBounds[curr_core+1]; t++)
         {
             for(i=0; i<this->K; i++)
@@ -392,12 +389,11 @@ void HMM::getGamma(double** alpha, double** beta, double* c,  double** emissionP
     myBounds[ncores] = T[n];
 
     int curr_core;
-    double **myTransMat = this->A->getTransMat();
 
 #pragma omp parallel for
     for(curr_core=0; curr_core<ncores; curr_core++)
     {
-        int i,j,t,k;
+        int i,t;
         double denom;
         for(t=myBounds[curr_core]; t<myBounds[curr_core+1]; t++)
         {
@@ -429,7 +425,7 @@ void HMM::getGamma(double** alpha, double** beta, double* c,  double** emissionP
 
 void HMM::getDirScore(double* dirScore, int** flags, int* state2flag, int* couples, int* revop, int** isNaN, double*** observations, double*** fixedEmission, int nStates, int nsample, int* T, int ncores, double effective_zero)
 {
-    int t,i,j,n,k;
+    int t,i,n;
 
     int maxLen = 0;
     for(n=0; n<nsample; n++)
@@ -448,7 +444,7 @@ void HMM::getDirScore(double* dirScore, int** flags, int* state2flag, int* coupl
     double* Pk = NULL;
     double** emissionProb = NULL;
     double* c = NULL;
-    int memory_used = this->allocateMemEM(&emissionProb, &alpha, &beta, &gamma, &xsi, &c, &Pk, maxLen, nsample);
+    (void) this->allocateMemEM(&emissionProb, &alpha, &beta, &gamma, &xsi, &c, &Pk, maxLen, nsample);
 
     double* numer = (double*)malloc(sizeof(double)*this->K);
     double* denom = (double*)malloc(sizeof(double)*this->K);
@@ -502,7 +498,7 @@ void HMM::getDirScore(double* dirScore, int** flags, int* state2flag, int* coupl
 //	printf("(%d,%d)=%f\n", i, dirScore[i], couples[i]);
     }
 
-    int memory_free = this->deallocateMemEM(emissionProb, alpha, beta, gamma, xsi, c, Pk, maxLen, nsample);
+    (void) this->deallocateMemEM(emissionProb, alpha, beta, gamma, xsi, c, Pk, maxLen, nsample);
     free(numer);
     free(denom);
 
@@ -573,7 +569,7 @@ void HMM::getGammaXsi(double** alpha, double** beta, double* c,  double** emissi
     for(curr_core=0; curr_core<ncores; curr_core++)
     {
 //Rprintf("pid=%d\n", curr_core);
-        int i,j,t,k;
+        int i,t,k;
         double denom;
         for(t=myBounds[curr_core]; t<myBounds[curr_core+1]; t++)
         {
@@ -693,7 +689,7 @@ int HMM::allocateMemEM(double*** emissionProb, double*** alpha, double*** beta, 
 
 int HMM::deallocateMemEM(double** emissionProb, double** alpha, double** beta, double** gamma, double*** xsi, double* c, double* Pk, int maxLen, int nsample)
 {
-    int i,j,t;
+    int i,t;
     int memory_free = 0;
 
     for(i=0; i<this->K; i++)
@@ -966,7 +962,7 @@ void HMM::updateModelParams(double*** observations, int nsample, int* state2flag
 
 list<double> HMM::BaumWelch(double*** observations, int* T, int nsample, int maxIters, int** flags, int* state2flag, int* couples, int* revop, int verbose, int updateTransMat, int** isNaN, double*** fixedEmission, SEXP bidirOptimParams, SEXP emissionPrior, int ncores, double effective_zero, double convergence, int incrementalEM, int clust)
 {
-    int t,i,j,n;
+    int t,i,n;
 
     double allT = 0;
     for(n=0; n<nsample; n++)
@@ -974,7 +970,6 @@ list<double> HMM::BaumWelch(double*** observations, int* T, int nsample, int max
         allT += T[n];
     }
     list<double> log_lik;
-    double old_prior =  -(double)INFINITY;
     int iter = 0;
     double old_log_lik = -(double)INFINITY;
     double new_log_lik = 0;
@@ -1180,7 +1175,7 @@ llh = "Log-Posterior";
             }
 
                                                   // calculate new LLH
-            if(LENGTH(bidirOptimParams) > 0 & iter > 1)
+            if((LENGTH(bidirOptimParams) > 0) && (iter > 1))
             {
                 before = INTEGER(getListElement(bidirOptimParams, "nrm"))[LENGTH(getListElement(bidirOptimParams, "nrm"))-3];
                 now = INTEGER(getListElement(bidirOptimParams, "nrm"))[LENGTH(getListElement(bidirOptimParams, "nrm"))-2];
@@ -1226,7 +1221,7 @@ llh = "Log-Posterior";
         currDiff = (new_log_lik-old_log_lik)/fabs(old_log_lik);
 
         constraints_changed = "";
-        if(iter > 0 && LENGTH(bidirOptimParams) != 0 & now  != before & DEBUG)
+        if((iter > 0) && (LENGTH(bidirOptimParams) != 0) && (now  != before) && DEBUG)
         {
             constraints_changed = " (*)";
         }
