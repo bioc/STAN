@@ -14,7 +14,7 @@ EmissionFactory* createEmissionFactory(int whichone)
 {
     if (DEBUG_MEMORY)
     {
-        printf("new->EmissionFactory;\n");
+        Rprintf("new->EmissionFactory;\n");
     }
 
     if (MULTIVARIATEGAUSSIAN == whichone)

@@ -13,7 +13,7 @@ ParamContainerEmissions *emissionParams)
 
     if (DEBUG_MEMORY)
     {
-        printf("new->MultivariateGaussian; (%d bytes) \n", mem);
+        Rprintf("new->MultivariateGaussian; (%d bytes) \n", mem);
     }
 
     this->updateNumeratorMU = (double*) malloc(
@@ -62,7 +62,7 @@ MultivariateGaussian::~MultivariateGaussian()
         + sizeof(double*) * this->emissionParams->getD() * 2;
     if (DEBUG_MEMORY)
     {
-        printf("delete->MultivariateGaussian; (%d bytes) ", mem);
+        Rprintf("delete->MultivariateGaussian; (%d bytes) ", mem);
     }
     delete this->emissionParams;
 }

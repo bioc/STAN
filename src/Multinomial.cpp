@@ -15,7 +15,7 @@ Multinomial::Multinomial(ParamContainerEmissions *emissionParams)
         + sizeof(double*) * this->emissionParams->getD() * 2;
     if (DEBUG_MEMORY)
     {
-        printf("new->Multinomial; (%d bytes) \n", mem);
+        Rprintf("new->Multinomial; (%d bytes) \n", mem);
     }
 
     this->updateNumeratorMP = (double*) malloc(
@@ -42,7 +42,7 @@ Multinomial::~Multinomial()
         + sizeof(double*) * this->emissionParams->getD() * 2;
     if (DEBUG_MEMORY)
     {
-        printf("delete->Multinomial; (%d bytes) ", mem);
+        Rprintf("delete->Multinomial; (%d bytes) ", mem);
     }
     delete this->emissionParams;
 //delete this->emissionParams;

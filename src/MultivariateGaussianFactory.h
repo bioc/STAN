@@ -14,7 +14,7 @@ class MultivariateGaussianFactory : public EmissionFactory
         {
             if(DEBUG_MEMORY)
             {
-                printf("factory->create():");
+                Rprintf("factory->create():");
             }
             if(parallel == 0)
             {

@@ -15,7 +15,7 @@ Poisson::Poisson(ParamContainerEmissions *emissionParams)
         + sizeof(double*) * this->emissionParams->getD() * 2;
     if (DEBUG_MEMORY)
     {
-        printf("new->Poisson; (%d bytes) \n", mem);
+        Rprintf("new->Poisson; (%d bytes) \n", mem);
     }
 
     this->updateNumeratorLambda = (double*) malloc(
@@ -42,7 +42,7 @@ Poisson::~Poisson()
         + sizeof(double*) * this->emissionParams->getD() * 2;
     if (DEBUG_MEMORY)
     {
-        printf("delete->Poisson; (%d bytes) ", mem);
+        Rprintf("delete->Poisson; (%d bytes) ", mem);
     }
 //delete this->emissionParams;
 }

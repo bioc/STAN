@@ -61,7 +61,7 @@ JointlyIndependent::~JointlyIndependent()
     delete this->emissionParams;
     if (DEBUG_MEMORY)
     {
-        printf("delete->JointlyIndependent; (%d bytes) ", mem);
+        Rprintf("delete->JointlyIndependent; (%d bytes) ", mem);
     }
 
 }

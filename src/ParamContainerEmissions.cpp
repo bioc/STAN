@@ -66,7 +66,7 @@ ParamContainerEmissions::ParamContainerEmissions(double **mu, double **sigma, do
     int mem = sizeof(double*)*D + sizeof(double)*1 + 2*sizeof(double*)*D + 2*sizeof(double)*D;
     if(DEBUG_MEMORY)
     {
-        printf("new->ParamContainerEmissions:MULTIVARIATEGAUSSIAN ; (%d bytes) ", mem);
+        Rprintf("new->ParamContainerEmissions:MULTIVARIATEGAUSSIAN ; (%d bytes) ", mem);
     }
 
 }
@@ -89,7 +89,7 @@ ParamContainerEmissions::ParamContainerEmissions(double p, int D, int* start)
 
     if(DEBUG_MEMORY)
     {
-        printf("new->ParamContainerEmissions:BERNOULLI; (%d bytes) ", mem);
+        Rprintf("new->ParamContainerEmissions:BERNOULLI; (%d bytes) ", mem);
     }
 }
 
@@ -110,7 +110,7 @@ ParamContainerEmissions::ParamContainerEmissions(double lambda, int D, int* star
 
     if(DEBUG_MEMORY)
     {
-        printf("new->ParamContainerEmissions:POISSON; (%d bytes) ", mem);
+        Rprintf("new->ParamContainerEmissions:POISSON; (%d bytes) ", mem);
     }
 }
 
@@ -129,7 +129,7 @@ ParamContainerEmissions::ParamContainerEmissions(double* p, int* reverseCompleme
 
     if(DEBUG_MEMORY)
     {
-        printf("new->ParamContainerEmissions:MULTINOMIAL; (%d bytes) ", mem);
+        Rprintf("new->ParamContainerEmissions:MULTINOMIAL; (%d bytes) ", mem);
     }
 }
 
@@ -151,7 +151,7 @@ ParamContainerEmissions::ParamContainerEmissions(double mu_nb, double size_nb, d
 
     if(DEBUG_MEMORY)
     {
-        printf("new->ParamContainerEmissions:NEGATIVEBINOMIAL; (%d bytes) ", mem);
+        Rprintf("new->ParamContainerEmissions:NEGATIVEBINOMIAL; (%d bytes) ", mem);
     }
 }
 
@@ -173,7 +173,7 @@ ParamContainerEmissions::ParamContainerEmissions(double mu_poilog, double sigma_
 
     if(DEBUG_MEMORY)
     {
-        printf("new->ParamContainerEmissions:POISSONLOGNORMAL; (%d bytes) ", mem);
+        Rprintf("new->ParamContainerEmissions:POISSONLOGNORMAL; (%d bytes) ", mem);
     }
 }
 
@@ -203,7 +203,7 @@ ParamContainerEmissions::~ParamContainerEmissions()
 
         if(DEBUG_MEMORY)
         {
-            printf("delete->ParamContainerEmissions:MULTIVARIATEGAUSSIAN; (%d bytes) \n", mem);
+            Rprintf("delete->ParamContainerEmissions:MULTIVARIATEGAUSSIAN; (%d bytes) \n", mem);
         }
 
     }
@@ -211,21 +211,21 @@ ParamContainerEmissions::~ParamContainerEmissions()
     {
         if(DEBUG_MEMORY)
         {
-            printf("delete->ParamContainerEmissions:BERNOULLI; (%d bytes) \n", mem);
+            Rprintf("delete->ParamContainerEmissions:BERNOULLI; (%d bytes) \n", mem);
         }
     }
     if(this->whichone == POISSON)
     {
         if(DEBUG_MEMORY)
         {
-            printf("delete->ParamContainerEmissions:BERNOULLI; (%d bytes) \n", mem);
+            Rprintf("delete->ParamContainerEmissions:BERNOULLI; (%d bytes) \n", mem);
         }
     }
     if(this->whichone == MULTINOMIAL)
     {
         if(DEBUG_MEMORY)
         {
-            printf("delete->ParamContainerEmissions:MULTINOMIAL; (%d bytes) \n", mem);
+            Rprintf("delete->ParamContainerEmissions:MULTINOMIAL; (%d bytes) \n", mem);
         }
         free(mp);
         free(reverseComplementary);
@@ -234,7 +234,7 @@ ParamContainerEmissions::~ParamContainerEmissions()
     {
         if(DEBUG_MEMORY)
         {
-            printf("delete->ParamContainerEmissions:NEGATIVEBINOMIAL; (%d bytes) \n", mem);
+            Rprintf("delete->ParamContainerEmissions:NEGATIVEBINOMIAL; (%d bytes) \n", mem);
         }
 
         free(this->sizeFactor_nb);
@@ -244,7 +244,7 @@ ParamContainerEmissions::~ParamContainerEmissions()
     {
         if(DEBUG_MEMORY)
         {
-            printf("delete->ParamContainerEmissions:POISSONLOGNORMAL; (%d bytes) \n", mem);
+            Rprintf("delete->ParamContainerEmissions:POISSONLOGNORMAL; (%d bytes) \n", mem);
         }
 
         free(this->sizeFactor_poilog);

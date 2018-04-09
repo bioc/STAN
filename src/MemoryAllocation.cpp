@@ -51,7 +51,7 @@ int allocateMemAlpha(double*** alpha, int maxLen, int K)
 
     if(DEBUG_MEMORY)
     {
-        printf("Alpha needs %lf MB of memory.\n", megabytes_used);
+        Rprintf("Alpha needs %f MB of memory.\n", megabytes_used);
     }
 //printf("Available system memory: %d\n", (unsigned int) getTotalSystemMemory());
     return memory_used;
@@ -79,7 +79,7 @@ int allocateMemBeta(double*** beta, int maxLen, int K)
 
     if(DEBUG_MEMORY)
     {
-        printf("Beta needs %lf MB of memory.\n", megabytes_used);
+        Rprintf("Beta needs %f MB of memory.\n", megabytes_used);
     }
 //printf("Available system memory: %d\n", (unsigned int) getTotalSystemMemory());
     return memory_used;
@@ -103,7 +103,7 @@ int allocateMemRescFac(double** c, int maxLen, int K)
 
     if(DEBUG_MEMORY)
     {
-        printf("Rescaling factor needs %lf MB of memory.\n", megabytes_used);
+        Rprintf("Rescaling factor needs %f MB of memory.\n", megabytes_used);
     }
 //printf("Available system memory: %d\n", (unsigned int) getTotalSystemMemory());
     return memory_used;
@@ -134,7 +134,7 @@ int allocateMemGamma(double*** gamma, int maxLen, int K)
 
     if(DEBUG_MEMORY)
     {
-        printf("Gamma needs %lf MB of memory.\n", megabytes_used);
+        Rprintf("Gamma needs %f MB of memory.\n", megabytes_used);
     }
 //printf("Available system memory: %d\n", (unsigned int) getTotalSystemMemory());
     return memory_used;
@@ -171,7 +171,7 @@ int allocateMemXsi(double**** xsi, int maxLen, int K)
 
     if(DEBUG_MEMORY)
     {
-        printf("Xsi needs %lf MB of memory.\n", megabytes_used);
+        Rprintf("Xsi needs %f MB of memory.\n", megabytes_used);
     }
 //printf("Available system memory: %d\n", (unsigned int) getTotalSystemMemory());
     return memory_used;
@@ -202,7 +202,7 @@ int allocateMemEmissionProb(double*** emissionProb, int maxLen, int K)
 
     if(DEBUG_MEMORY)
     {
-        printf("Emission probabilities need %lf MB of memory.\n", megabytes_used);
+        Rprintf("Emission probabilities need %f MB of memory.\n", megabytes_used);
     }
 //printf("Available system memory: %d\n", (unsigned int) getTotalSystemMemory());
     return memory_used;

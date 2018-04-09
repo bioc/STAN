@@ -18,7 +18,7 @@ class JointlyIndependentFactory : public EmissionFactory
         {
             if(DEBUG_MEMORY)
             {
-                printf("createEmissionFunction factory->create():");
+                Rprintf("createEmissionFunction factory->create():");
             }
             return NULL;
         }
@@ -27,7 +27,7 @@ class JointlyIndependentFactory : public EmissionFactory
         {
             if(DEBUG_MEMORY)
             {
-                printf("createEmissionFunctionMixed factory->create():");
+                Rprintf("createEmissionFunctionMixed factory->create():");
             }
             return new JointlyIndependent(efb, emissionParams);
         }

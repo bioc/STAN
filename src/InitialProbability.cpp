@@ -14,7 +14,7 @@ InitialProbability::InitialProbability(double *pi, int K)
     }
     if(DEBUG_MEMORY)
     {
-        printf("new->InitialProbability; (%d bytes)\n", sizeof(double)*K*2);
+        Rprintf("new->InitialProbability; (%lud bytes)\n", sizeof(double)*K*2);
     }
 
 }
@@ -27,7 +27,7 @@ InitialProbability::~InitialProbability()
 
     if(DEBUG_MEMORY)
     {
-        printf("delete->InitialProbability; (%d bytes)\n", sizeof(double)*K*2);
+        Rprintf("delete->InitialProbability; (%lud bytes)\n", sizeof(double)*K*2);
     }
 }
 

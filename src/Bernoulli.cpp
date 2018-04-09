@@ -14,7 +14,7 @@ Bernoulli::Bernoulli(ParamContainerEmissions *emissionParams)
         + sizeof(double*) * this->emissionParams->getD() * 2;
     if (DEBUG_MEMORY)
     {
-        printf("new->Bernoulli; (%d bytes) \n", mem);
+        Rprintf("new->Bernoulli; (%d bytes) \n", mem);
     }
 
     this->updateNumeratorP = (double*) malloc(
@@ -40,7 +40,7 @@ Bernoulli::~Bernoulli()
         + sizeof(double*) * this->emissionParams->getD() * 2;
     if (DEBUG_MEMORY)
     {
-        printf("delete->Bernoulli; (%d bytes) ", mem);
+        Rprintf("delete->Bernoulli; (%d bytes) ", mem);
     }
 //delete this->emissionParams;
 }

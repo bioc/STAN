@@ -14,7 +14,7 @@ ParamContainerEmissions *emissionParams)
 
     if (DEBUG_MEMORY)
     {
-        printf("new->PoissonLogNormal; (%d bytes) \n", mem);
+        Rprintf("new->PoissonLogNormal; (%d bytes) \n", mem);
     }
 
 }
@@ -25,7 +25,7 @@ PoissonLogNormal::~PoissonLogNormal()
 
     if (DEBUG_MEMORY)
     {
-        printf("delete->PoissonLogNormal; (%d bytes) ", 0);
+        Rprintf("delete->PoissonLogNormal; (%d bytes) ", 0);
     }
     delete this->emissionParams;
 }

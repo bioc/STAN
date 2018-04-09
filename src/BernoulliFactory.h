@@ -14,7 +14,7 @@ class BernoulliFactory : public EmissionFactory
         {
             if(DEBUG_MEMORY)
             {
-                printf("factory->create():");
+                Rprintf("factory->create():");
             }
             if(parallel == 0)
             {
