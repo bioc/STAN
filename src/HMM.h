@@ -72,7 +72,7 @@ class HMM
  * Destructor for HMM. Sets previously allocated memory of all class attributes free.
  *
  */
-        ~HMM();                                   //virtual
+        virtual ~HMM();                                   //virtual
 
         virtual void getAlphaBeta(double*** obs, double **alpha, double **beta, double *c, double **emissionProb, int* T, int n, int ncores, double effective_zero, int verbose);
         list<double> BaumWelch(double*** observations, int* T, int nsample, int maxIters, int** flags, int* state2flag, int* couples, int* revop, int verbose, int updateTransMat, int** isNaN, double*** fixedEmission, SEXP bidirOptimParams, SEXP emissionPrior, int ncores, double effective_zero, double convergence, int incrementalEM, int clust);

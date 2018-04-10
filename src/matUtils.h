@@ -15,7 +15,7 @@
 #include <cmath>
 
 void inverse(double** A, int N);
-void **matrixMult(double **v1, int d11, int d12, double **v2, int d21, int d22, double **result);
+void matrixMult(double **v1, int d11, int d12, double **v2, int d21, int d22, double **result);
 double matrixDet(double **m, int dim);
 void inverseR(double** mat, int N);
 #endif

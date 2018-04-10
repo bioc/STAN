@@ -76,7 +76,7 @@ void inverseR(double** mat, int N)
 }
 
 
-void **matrixMult(double **v1, int d11, int d12, double **v2, int d21, int d22, double **result)
+void matrixMult(double **v1, int d11, int d12, double **v2, int d21, int d22, double **result)
 {
 //Rprintf("mat-mult\n");
     if(d12 != d21)
