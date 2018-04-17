@@ -14,7 +14,7 @@ class EmissionFactory
 // create single Emission function
         virtual EmissionFunction* createEmissionFunction(ParamContainerEmissions *emissionParams, int parallel) = 0;
 // create set of Emission functions
-        virtual EmissionFunction* createEmissionFunctionMixed(list<EmissionFunction*> efb, ParamContainerEmissions *emissionParams) {};
+        virtual EmissionFunction* createEmissionFunctionMixed(list<EmissionFunction*> efb, ParamContainerEmissions *emissionParams) {return createEmissionFunction(emissionParams,1);};
         virtual ~EmissionFactory()
         {
             if(DEBUG_MEMORY)
