@@ -213,8 +213,8 @@ data2Gviz = function (obs, regions, binSize, gen, col = "black", type = "h", chr
   regions = regions[seqnames(regions) == chrom]
   for (n in colnames(mySignals)) {
     dlist[[n]] = DataTrack(data = mySignals[, n], start = seq(start(regions), 
-                                                              end(regions) - binSize + 1, by = binSize), end = seq(start(regions) + 
-                                                                                                                     binSize - 1, end(regions), by = binSize), chromosome = as.character(seqnames(regions)), 
+                                                              end(regions), by = binSize)[1:nrow(mySignals)], end = seq(start(regions) + binSize - 1, end(regions) + binSize, by = binSize)[1:nrow(mySignals)]
+                           , chromosome = as.character(seqnames(regions)), 
                            genome = gen, name = n, type = type, col = col)
   }
   dlist
