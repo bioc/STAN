@@ -35,7 +35,6 @@ Max Planck Institute for Plant Breeding Research, Cologne, Germany} \\
 \title{The genomic STate ANnotation package}
 
 \begin{document}
-\SweaveOpts{concordance=TRUE}
 % \SweaveOpts{concordance=TRUE}
 
 <<include=FALSE>>=
@@ -510,7 +509,7 @@ dev.off()
 
 \section{Integrating strand-specific and non-strand-specific data with STAN}
 \Biocpkg{STAN} also allows for the integration of strand-specific (e.g. RNA) 
-and non-strand-specific data (e.g. ChIP). This is done using bidirectional
+and non-strand-specific data (e.g. ChIP). This is donw using bidirectional
 hidden Markov models (bdHMMs) which were proposed in \cite{zacher2014}. 
 A bdHMM models a directed process using the concept of twin states, where each
 genomic state is split up into a pair of twin states, one for  each 

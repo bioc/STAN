@@ -51,3 +51,9 @@ EmissionFactory* createEmissionFactory(int whichone)
     }
 
 }
+
+EmissionFunction* createEmissionFunctionMixed()
+{
+  return NULL;  
+  
+}
