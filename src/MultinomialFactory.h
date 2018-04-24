@@ -20,6 +20,7 @@ class MultinomialFactory : public EmissionFactory
             {
                 return new Multinomial(emissionParams);
             }
+            return NULL;
 
         }
         MultinomialFactory() {}

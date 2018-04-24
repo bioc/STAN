@@ -24,6 +24,7 @@ class PoissonLogNormalFactory : public EmissionFactory
             {
                 return new PoissonLogNormal(emissionParams);
             }
+            return NULL;
         }
         PoissonLogNormalFactory() {}
         ~PoissonLogNormalFactory() { }

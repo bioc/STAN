@@ -20,6 +20,7 @@ class MultivariateGaussianFactory : public EmissionFactory
             {
                 return new MultivariateGaussian(emissionParams);
             }
+            return NULL;
         }
         MultivariateGaussianFactory() {}
         ~MultivariateGaussianFactory() { }

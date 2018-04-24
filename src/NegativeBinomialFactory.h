@@ -24,6 +24,7 @@ class NegativeBinomialFactory : public EmissionFactory
             {
                 return new NegativeBinomial(emissionParams);
             }
+            return NULL;
         }
         NegativeBinomialFactory() {}
         ~NegativeBinomialFactory() { }

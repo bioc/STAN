@@ -739,6 +739,7 @@ else {
         {
             return RPREPAREPOISSONLOGNORMALPAR(myEmissions, K, useNames);
         }
+        return NULL;
     }
 
     SEXP RPREPAREJOINTLYINDEPENDENTPAR(EmissionFunction** myEmissions, int K, SEXP types)
@@ -947,6 +948,7 @@ for (pos1 = combinedPerState.begin(); pos1!=combinedPerState.end(); pos1++) {
         {
             return new HMM(K, initProb, transMat, myEmissions);
         }
+        return NULL;
     }
 
     void RGETFLAGS(SEXP sexpflags, SEXP sexpstate2flag, int*** flags, int** state2flag, int nsample, int* T, int K)

@@ -24,6 +24,7 @@ class BernoulliFactory : public EmissionFactory
             {
                 return new Bernoulli(emissionParams);
             }
+            return NULL;
         }
         BernoulliFactory() {}
         ~BernoulliFactory() { }

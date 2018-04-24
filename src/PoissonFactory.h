@@ -20,7 +20,7 @@ class PoissonFactory : public EmissionFactory
             {
                 return new Poisson(emissionParams);
             }
-
+            return NULL;
         }
         PoissonFactory() {}
         ~PoissonFactory() { }
