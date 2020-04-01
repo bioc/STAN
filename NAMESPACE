@@ -28,7 +28,7 @@ exportClasses(bdHMM)
 export(call_dpoilog)
 export(initBdClust)
 export(fitBdClust)
-
+#
 import(Rsolnp)
 import(methods)
 import(GenomicRanges)
