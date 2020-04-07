@@ -42,7 +42,7 @@ fitHMM = function(obs=list(), hmm, convergence=1e-6, maxIters=1000, dirFlags=lis
         hmm = reorderbdHMMStates(hmm, originalStateLabel, FALSE)
     }
     if(class(obs) != "list") stop("Observations must be submitted as a list of matrices!")
-    if(! all(sapply(obs, class) == "matrix")) stop("Observations must be submitted as a list of matrices!")
+    if(! all(sapply(obs, class)[1,] == "matrix")) stop("Observations must be submitted as a list of matrices!")
     for(i in 1:length(obs)) {
         for(j in 1:ncol(obs[[i]])) {
             if(class(obs[[i]][,j]) != "numeric") {

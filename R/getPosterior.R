@@ -29,7 +29,7 @@ getPosterior = function(hmm, obs = list(), emissionProbs = list(), dirFlags = li
     mySplit = list()
     if (class(obs) != "list") 
         stop("Observations must be submitted as a list of matrices!")
-    if (!all(sapply(obs, class) == "matrix")) 
+    if (!all(sapply(obs, class)[1,] == "matrix")) 
         stop("Observations must be submitted as a list of matrices!")
     if (!class(hmm) %in% c("HMM", "bdHMM")) 
         stop("Parameter hmm is not of class HMM or bdHMM!")

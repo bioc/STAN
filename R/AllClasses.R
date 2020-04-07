@@ -48,7 +48,7 @@ checkParameters = function(type, parameters, nStates) {
         if (!(nStates == length(means) & nStates == length(covs))) 
             stop("Number of states does not match dimensions of means and covariances!")
         for (i in 1:length(means)) {
-            stopifnot(class(covs[[i]]) == "matrix")
+            stopifnot(class(covs[[i]])[1] == "matrix")
             stopifnot(dim(covs[[i]])[1] == dim(covs[[i]])[2] & length(means[[i]]) == 
                 dim(covs[[i]])[1])
             stopifnot((is.numeric(covs[[i]])) & (is.numeric(means[[i]])))

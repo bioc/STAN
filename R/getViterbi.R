@@ -27,7 +27,7 @@ getViterbi = function(hmm, obs = list(), NAtol = 5, emissionProbs = list(),
     verbose = FALSE, sizeFactors = matrix(1, nrow = length(obs), ncol = ncol(obs[[1]]))) {
     if (class(obs) != "list") 
         stop("Observations must be submitted as a list of matrices!")
-    if (!all(sapply(obs, class) == "matrix")) 
+    if (!all(sapply(obs, class)[1,] == "matrix")) 
         stop("Observations must be submitted as a list of matrices!")
     if (!class(hmm) %in% c("HMM", "bdHMM")) 
         stop("Parameter hmm is not of class HMM or bdHMM!")
