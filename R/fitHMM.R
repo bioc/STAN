@@ -447,7 +447,7 @@ emissionRevOp = function(emissionParams, type, bdHMM.settings, nStates, directed
                 if(! names(emissionParams$emissions[[i]]@parameters)[p] %in% c("sharedCov", "updateCov", "reverseComplementary")) {
                     for(k in 1:nStates) {
                     #   print(emissionParamsTemp$emissions[[i]]@parameters)
-                        if(class(emissionParamsTemp$emissions[[i]]@parameters[[p]][[k]]) == "matrix") {
+                        if(is.matrix(class(emissionParamsTemp$emissions[[i]]@parameters[[p]][[k]]))) {
                             colnames(emissionParamsTemp$emissions[[i]]@parameters[[p]][[k]]) = rownames(emissionParamsTemp$emissions[[i]]@parameters[[p]][[k]]) = dimNames[myDimSets[[i]]]
                         }
                         else {
