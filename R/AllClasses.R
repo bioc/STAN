@@ -472,7 +472,7 @@ checkEmissionTwins = function(mybdHMM) {
     myParams = EmissionParams(mybdHMM)
     # print(myParams)
     for (p in 1:length(myParams)) {
-        if (class(myParams[[p]]) == "list") {
+        if (class(myParams[[p]])[1] == "list") {
             # here we have covs
             if (length(myF) > 0) {
                 for (state in 1:length(myF)) {
@@ -480,7 +480,7 @@ checkEmissionTwins = function(mybdHMM) {
                     stop("Emission parameters of twin states do not match.")
                 }
             }
-        } else if (class(myParams[[p]]) == "matrix") {
+        } else if (class(myParams[[p]])[1] == "matrix") {
             if (length(myF) > 0) {
                 for (state in 1:length(myF)) {
                   # print(myParams[[p]][1,])
@@ -664,6 +664,7 @@ bdHMM = function(initProb = numeric(), transMat = matrix(numeric(), ncol = 0,
         transitionsOptim = transitionsOptim, directedObs = directedObs, 
         dirScore = dirScore)
     validbdHMM(mybdHMM)
+    
     mybdHMM
 }
 
