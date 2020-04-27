@@ -1030,7 +1030,7 @@ setMethod("[", signature(x="HMM", i="ANY", j="ANY"), function(x, i, j, ..., drop
                 if (!names(x@emission[[k]]@parameters)[l] %in% c("sharedCov", 
                   "updateCov", "reverseComplementary")) {
                   for (state in 1:length(x@emission[[k]]@parameters[[l]])) {
-                    if (class(x@emission[[k]]@parameters[[l]][[state]]) == 
+                    if (class(x@emission[[k]]@parameters[[l]][[state]])[1] == 
                       "matrix") {
                       x@emission[[k]]@parameters[[l]][[state]] = as.matrix(x@emission[[k]]@parameters[[l]][[state]][take, 
                         take])
