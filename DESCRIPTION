@@ -1,6 +1,6 @@
 Package: STAN
-Version: 2.23.0
-Date: 2017-08-10
+Version: 2.23.1
+Date: 2021-11-21
 Title: The Genomic STate ANnotation Package
 Author: Benedikt Zacher, Julia Ertl, Rafael Campos-Martin, Julien Gagneur, Achim Tresch
 Maintainer: Rafael Campos-Martin <campos@mpipz.mpg.de>
